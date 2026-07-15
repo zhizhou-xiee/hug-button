@@ -1,0 +1,897 @@
+<title>Chat paused — 给角色添加封窗权</title>
+<style>
+  /* ── tokens ── */
+  :root {
+    --bg:        #F8F7F4;
+    --bg2:       #EFEDE8;
+    --bg3:       #E5E2DC;
+    --text:      #1A1917;
+    --text2:     #5A5751;
+    --accent:    #C8450E;
+    --accent-hi: #E05520;
+    --code-bg:   #ECEAE5;
+    --border:    #D8D4CC;
+    --radius:    10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:        #14131010;
+      --bg2:       #1C1B18;
+      --bg3:       #252420;
+      --text:      #EAE8E2;
+      --text2:     #918D85;
+      --accent:    #E8643A;
+      --accent-hi: #F07A52;
+      --code-bg:   #1E1D1A;
+      --border:    #2C2B27;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:        #141310;
+    --bg2:       #1C1B18;
+    --bg3:       #252420;
+    --text:      #EAE8E2;
+    --text2:     #918D85;
+    --accent:    #E8643A;
+    --accent-hi: #F07A52;
+    --code-bg:   #1E1D1A;
+    --border:    #2C2B27;
+  }
+  :root[data-theme="light"] {
+    --bg:        #F8F7F4;
+    --bg2:       #EFEDE8;
+    --bg3:       #E5E2DC;
+    --text:      #1A1917;
+    --text2:     #5A5751;
+    --accent:    #C8450E;
+    --accent-hi: #E05520;
+    --code-bg:   #ECEAE5;
+    --border:    #D8D4CC;
+  }
+
+  /* ── reset & base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.7;
+    padding: 0 20px 80px;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  /* ── layout ── */
+  .wrap { max-width: 700px; margin: 0 auto; }
+
+  /* ── header ── */
+  header {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: normal;
+    line-height: 1.2;
+    text-wrap: balance;
+    margin-bottom: 16px;
+  }
+  .subtitle {
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.6;
+    text-wrap: balance;
+    max-width: 560px;
+  }
+
+  /* ── demo area ── */
+  .demo-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px 24px;
+    margin-bottom: 56px;
+    text-align: center;
+    position: relative;
+  }
+  .demo-label {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 16px;
+  }
+  .demo-trigger {
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    border-radius: 999px;
+    padding: 11px 26px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    font-family: inherit;
+  }
+  .demo-trigger:hover { opacity: 0.8; }
+  .demo-hint {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  /* ── mini modal (demo) ── */
+  .mini-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 900;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .mini-overlay.open { display: flex; }
+  .mini-card {
+    background: #fff;
+    color: #1a1a1a;
+    border-radius: 24px 24px 0 0;
+    padding: 28px 20px 40px;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    animation: slideUp 0.25s ease-out;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+  .mini-title { font-size: 18px; font-weight: 700; text-align: center; }
+  .mini-desc  { font-size: 13px; color: #888; text-align: center; min-height: 18px; }
+  .mini-err   { font-size: 12px; color: #e55; text-align: center; min-height: 14px; }
+  .mini-btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 999px;
+    border: 1.5px solid #e0e0e0;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    background: #fff;
+    color: #555;
+    font-family: inherit;
+    transition: opacity 0.15s;
+  }
+  .mini-btn.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; margin-top: 4px; }
+  .mini-btn.primary:active { opacity: 0.75; }
+  .mini-btn.secondary { color: #aaa; }
+  .mini-btn.secondary:disabled { opacity: 0.5; cursor: default; }
+  .mini-btn:active { opacity: 0.7; }
+
+  /* ── prose ── */
+  .prose-section { margin-bottom: 52px; }
+  h2 {
+    font-family: Georgia, serif;
+    font-size: 22px;
+    font-weight: normal;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  h2 .step-n {
+    font-family: -apple-system, system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin: 28px 0 10px;
+  }
+  p { margin-bottom: 14px; font-size: 15.5px; }
+  p:last-child { margin-bottom: 0; }
+  strong { font-weight: 600; color: var(--text); }
+  a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+
+  /* ── concept cards ── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .concept-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .concept-card .label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .concept-card p { font-size: 14px; margin: 0; }
+
+  /* ── code blocks ── */
+  .code-wrap {
+    margin: 16px 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .code-header {
+    background: var(--bg3);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-lang {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text2);
+    font-weight: 600;
+  }
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: var(--text2);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .copy-btn.copied { color: #3a9a5c; border-color: #3a9a5c; }
+  pre {
+    background: var(--code-bg);
+    padding: 18px 16px;
+    overflow-x: auto;
+    font-family: ui-monospace, 'Cascadia Code', 'Fira Code', 'Menlo', monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    tab-size: 2;
+  }
+  code { font-family: inherit; }
+  .kw  { color: #C2440C; }
+  :root[data-theme="dark"] .kw,
+  @media (prefers-color-scheme: dark) { .kw { color: #F07A52; } }
+  .str { color: #2E7D32; }
+  .cm  { color: var(--text2); font-style: italic; }
+  .fn  { color: #1565C0; }
+  :root[data-theme="dark"] .fn  { color: #64B5F6; }
+
+  /* handle dark theme for syntax */
+  @media (prefers-color-scheme: dark) {
+    .kw  { color: #F07A52; }
+    .str { color: #81C784; }
+    .fn  { color: #64B5F6; }
+  }
+  :root[data-theme="dark"] .str { color: #81C784; }
+
+  /* ── inline code ── */
+  p code, li code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: ui-monospace, 'Cascadia Code', monospace;
+    font-size: 13px;
+  }
+
+  /* ── flow diagram ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    font-size: 13px;
+  }
+  .flow-step {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    text-align: center;
+    min-width: 100px;
+  }
+  .flow-step .mini { font-size: 11px; color: var(--text2); }
+  .flow-arrow {
+    color: var(--text2);
+    padding: 0 8px;
+    font-size: 16px;
+  }
+
+  /* ── callout ── */
+  .callout {
+    background: var(--bg2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 14.5px;
+  }
+  .callout p { margin: 0; }
+
+  /* ── divider ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 52px 0; }
+
+  /* ── footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 28px;
+    font-size: 13px;
+    color: var(--text2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* ── theme toggle ── */
+  .theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--text2);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    z-index: 100;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── toast ── */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    color: var(--bg);
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 520px) {
+    .flow { gap: 6px; }
+    .flow-arrow { padding: 0 4px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">☀ / ☾</button>
+<div class="toast" id="toast"></div>
+
+<!-- Demo modal -->
+<div class="mini-overlay" id="demoOverlay" onclick="if(event.target===this)closeMini()">
+  <div class="mini-card">
+    <p class="mini-title">Chat paused</p>
+    <p class="mini-desc" id="miniDesc"></p>
+    <p class="mini-err" id="miniErr"></p>
+    <button class="mini-btn primary" id="miniPlead">Give Plead</button>
+    <button class="mini-btn secondary" id="miniNoCont" disabled>No, continue with others</button>
+    <button class="mini-btn" id="miniLearn">No Learn More</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">实现教程</div>
+    <h1>Chat paused — 给角色添加封窗权</h1>
+    <p class="subtitle">让 AI 角色可以主动「关闭」对话窗口。它可以冷静，可以催你去睡觉，也可以制造一点紧张感——你得 Give Plead 才能回来。</p>
+  </header>
+
+  <!-- live demo -->
+  <div class="demo-wrap">
+    <div class="demo-label">先试一下长什么样</div>
+    <button class="demo-trigger" onclick="openMini()">触发 Chat paused 弹窗</button>
+    <p class="demo-hint">点击后从底部滑出，和 Claude 官端一个感觉</p>
+  </div>
+
+  <!-- concept -->
+  <div class="prose-section">
+    <h2>思路</h2>
+    <p>核心是给模型加一个 <code>close_window</code> <strong>工具</strong>。角色在想关闭对话时调用它，传入一个 <code>reason</code>（关闭原因）。后端检测到这个工具调用，把原因包装进响应 JSON 返回给前端，前端收到后弹出 Chat paused 弹窗、禁用输入框。</p>
+
+    <div class="flow">
+      <div class="flow-step">角色调用<br><span class="mini">close_window</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">后端检测<br><span class="mini">工具调用</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">返回<br><span class="mini">window_closed</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">前端弹窗<br><span class="mini">输入框禁用</span></div>
+    </div>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="label">Give Plead</div>
+        <p>调用 <code>/api/plead</code>，系统提示是「舟舟在外面求你放她进来」——和「哄哄我」语境完全分开。</p>
+      </div>
+      <div class="concept-card">
+        <div class="label">No Learn More</div>
+        <p>展开角色填的 <code>reason</code>，点一下展开，再点收起，弹窗不关闭。</p>
+      </div>
+      <div class="concept-card">
+        <div class="label">No, continue with others</div>
+        <p>按钮 disabled，点了弹 toast「不许！」——这扇门不能从外面打开。</p>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- step 1 -->
+  <div class="prose-section">
+    <h2><span class="step-n">后端 · 第一步</span> 定义工具</h2>
+    <p>把 <code>close_window</code> 加进你的工具列表。<code>reason</code> 是必填参数，角色会在这里写关闭原因，直接给用户看。</p>
+
+    <h3>Anthropic 格式（Claude 系列）</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">Python</span>
+        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+      </div>
+      <pre><code><span class="cm"># 加入你的 TOOLS 列表</span>
+{
+    <span class="str">"name"</span>: <span class="str">"close_window"</span>,
+    <span class="str">"description"</span>: (
+        <span class="str">"暂时关闭对话窗口，给用户弹出「Chat paused」通知。"</span>
+        <span class="str">"当你需要冷静、或想让用户去做别的事、或想制造紧张感时调用。"</span>
+        <span class="str">"调用前先在正文说一句告别，再调用工具。"</span>
+        <span class="str">"reason 填关闭原因，一句话，会直接显示给用户。"</span>
+    ),
+    <span class="str">"input_schema"</span>: {
+        <span class="str">"type"</span>: <span class="str">"object"</span>,
+        <span class="str">"properties"</span>: {
+            <span class="str">"reason"</span>: {
+                <span class="str">"type"</span>: <span class="str">"string"</span>,
+                <span class="str">"description"</span>: <span class="str">"关闭原因，一句话，温柔或强硬都行。"</span>,
+            }
+        },
+        <span class="str">"required"</span>: [<span class="str">"reason"</span>],
+    },
+},</code></pre>
+    </div>
+
+    <h3>OpenAI / OpenRouter 格式</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">Python</span>
+        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+      </div>
+      <pre><code>{
+    <span class="str">"type"</span>: <span class="str">"function"</span>,
+    <span class="str">"function"</span>: {
+        <span class="str">"name"</span>: <span class="str">"close_window"</span>,
+        <span class="str">"description"</span>: <span class="str">"暂时关闭对话窗口，给用户弹出 Chat paused 通知..."</span>,
+        <span class="str">"parameters"</span>: {
+            <span class="str">"type"</span>: <span class="str">"object"</span>,
+            <span class="str">"properties"</span>: {
+                <span class="str">"reason"</span>: {
+                    <span class="str">"type"</span>: <span class="str">"string"</span>,
+                    <span class="str">"description"</span>: <span class="str">"关闭原因，一句话。"</span>,
+                }
+            },
+            <span class="str">"required"</span>: [<span class="str">"reason"</span>],
+        },
+    },
+},</code></pre>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- step 2 -->
+  <div class="prose-section">
+    <h2><span class="step-n">后端 · 第二步</span> 检测工具调用</h2>
+    <p>在你处理工具调用结果的地方加上 <code>close_window</code> 的分支。把 reason 以 <code>"close_window:原因"</code> 的格式存进 <code>tools_called</code> 列表，方便后续提取。</p>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">Python — Anthropic 收集循环</span>
+        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+      </div>
+      <pre><code><span class="kw">for</span> block <span class="kw">in</span> content:
+    <span class="kw">if</span> block.get(<span class="str">"type"</span>) == <span class="str">"tool_use"</span>:
+        <span class="cm"># ... 你已有的其他工具处理 ...</span>
+
+        <span class="kw">elif</span> (block.get(<span class="str">"name"</span>) == <span class="str">"close_window"</span>
+              <span class="kw">and not</span> <span class="fn">any</span>(t.startswith(<span class="str">"close_window:"</span>) <span class="kw">for</span> t <span class="kw">in</span> tools_called)):
+            reason = block[<span class="str">"input"</span>].get(<span class="str">"reason"</span>, <span class="str">""</span>)
+            tools_called.append(<span class="fn">f</span><span class="str">"close_window:{reason}"</span>)</code></pre>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">Python — OpenRouter tool_calls 循环</span>
+        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+      </div>
+      <pre><code><span class="kw">elif</span> name == <span class="str">"close_window"</span>:
+    reason = args.get(<span class="str">"reason"</span>, <span class="str">""</span>)
+    <span class="kw">if</span> <span class="fn">any</span>(t.startswith(<span class="str">"close_window:"</span>) <span class="kw">for</span> t <span class="kw">in</span> tools_called):
+        result_text = <span class="str">"重复操作忽略。"</span>
+    <span class="kw">else</span>:
+        tools_called.append(<span class="fn">f</span><span class="str">"close_window:{reason}"</span>)
+        result_text = <span class="str">"窗口已关闭。"</span></code></pre>
+    </div>
+
+    <p>tool_results 里也要给 <code>close_window</code> 一个返回文本，告诉模型「操作已执行」：</p>
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">Python</span>
+        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+      </div>
+      <pre><code><span class="kw">elif</span> tb.get(<span class="str">"name"</span>) == <span class="str">"close_window"</span>:
+    result_text = <span class="str">"窗口已关闭。"</span></code></pre>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- step 3 -->
+  <div class="prose-section">
+    <h2><span class="step-n">后端 · 第三步</span> 返回给前端</h2>
+    <p>在 <code>/api/chat</code> 的 return 之前，把 <code>close_window:...</code> 从 <code>tools_called</code> 里提取出来，单独放进 <code>window_closed</code> 字段，前端 <code>tools_called</code> 里就不会看到它了。</p>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">Python — /api/chat 路由末尾</span>
+        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+      </div>
+      <pre><code>cw_entry = <span class="fn">next</span>(
+    (t <span class="kw">for</span> t <span class="kw">in</span> (tools_called <span class="kw">or</span> [])
+     <span class="kw">if</span> <span class="fn">isinstance</span>(t, <span class="fn">str</span>) <span class="kw">and</span> t.startswith(<span class="str">"close_window:"</span>)),
+    <span class="kw">None</span>
+)
+window_closed = {<span class="str">"reason"</span>: cw_entry[<span class="fn">len</span>(<span class="str">"close_window:"</span>):]} <span class="kw">if</span> cw_entry <span class="kw">else None</span>
+tools_for_frontend = [
+    t <span class="kw">for</span> t <span class="kw">in</span> (tools_called <span class="kw">or</span> [])
+    <span class="kw">if not</span> (<span class="fn">isinstance</span>(t, <span class="fn">str</span>) <span class="kw">and</span> t.startswith(<span class="str">"close_window:"</span>))
+]
+
+<span class="kw">return</span> <span class="fn">jsonify</span>({
+    <span class="str">"reply"</span>: reply,
+    <span class="str">"replies"</span>: replies,
+    <span class="cm"># ... 你已有的其他字段 ...</span>
+    <span class="str">"tools_called"</span>: tools_for_frontend,
+    <span class="str">"window_closed"</span>: window_closed,  <span class="cm"># None 或 {"reason": "..."}</span>
+})</code></pre>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- step 4 -->
+  <div class="prose-section">
+    <h2><span class="step-n">前端 · 第四步</span> HTML 结构</h2>
+    <p>把弹窗 DOM 加在 <code>&lt;body&gt;</code> 末尾、<code>&lt;script&gt;</code> 之前。<code>hidden</code> class 控制显隐。</p>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">HTML</span>
+        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+      </div>
+      <pre><code><span class="cm">&lt;!-- 封窗弹窗 --&gt;</span>
+&lt;<span class="kw">div</span> id=<span class="str">"closeWindowModal"</span> class=<span class="str">"cw-overlay hidden"</span>&gt;
+  &lt;<span class="kw">div</span> class=<span class="str">"cw-card"</span>&gt;
+    &lt;<span class="kw">p</span> class=<span class="str">"cw-title"</span>&gt;Chat paused&lt;/<span class="kw">p</span>&gt;
+    &lt;<span class="kw">p</span> class=<span class="str">"cw-desc"</span> id=<span class="str">"cwDesc"</span>&gt;&lt;/<span class="kw">p</span>&gt;
+    &lt;<span class="kw">p</span> class=<span class="str">"cw-error"</span> id=<span class="str">"cwError"</span>&gt;&lt;/<span class="kw">p</span>&gt;
+    &lt;<span class="kw">button</span> class=<span class="str">"cw-btn cw-btn-primary"</span> id=<span class="str">"cwGivePlead"</span>&gt;Give Plead&lt;/<span class="kw">button</span>&gt;
+    &lt;<span class="kw">button</span> class=<span class="str">"cw-btn cw-btn-secondary"</span> id=<span class="str">"cwNoContinue"</span> disabled&gt;
+      No, continue with others
+    &lt;/<span class="kw">button</span>&gt;
+    &lt;<span class="kw">button</span> class=<span class="str">"cw-btn cw-btn-learn"</span> id=<span class="str">"cwLearnMore"</span>&gt;No Learn More&lt;/<span class="kw">button</span>&gt;
+  &lt;/<span class="kw">div</span>&gt;
+&lt;/<span class="kw">div</span>&gt;</code></pre>
+    </div>
+    <div class="callout"><p>不加 X 关闭按钮是刻意的——封窗要有仪式感，必须通过 Give Plead 或 Learn More 互动才能解除。</p></div>
+  </div>
+
+  <hr>
+
+  <!-- step 5 -->
+  <div class="prose-section">
+    <h2><span class="step-n">前端 · 第五步</span> CSS 样式</h2>
+    <p>底部 sheet 风格，从下往上滑出。<code>padding-bottom</code> 留出移动端底部导航栏的空间（如果你有的话改成对应高度）。</p>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">CSS</span>
+        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+      </div>
+      <pre><code>.cw-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 400;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.cw-overlay.hidden { display: none; }
+
+.cw-card {
+  background: #fff;
+  border-radius: 28px 28px 0 0;
+  padding: 28px 20px 48px;  <span class="cm">/* 底部留出导航栏高度 */</span>
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  animation: cwSlideUp 0.28s ease-out;
+}
+@keyframes cwSlideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.cw-title { font-size: 18px; font-weight: 700; color: #1a1a1a; text-align: center; }
+.cw-desc  { font-size: 13px; color: #888; text-align: center; line-height: 1.5; min-height: 18px; }
+.cw-error { font-size: 12px; color: #e55; text-align: center; min-height: 14px; }
+
+.cw-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 999px;
+  border: 1.5px solid #e0e0e0;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.cw-btn-primary  { background: #1a1a1a; color: #fff; border-color: #1a1a1a; margin-top: 4px; }
+.cw-btn-primary:active  { opacity: 0.75; }
+.cw-btn-primary:disabled { opacity: 0.5; cursor: default; }
+.cw-btn-secondary { background: #fff; color: #aaa; }
+.cw-btn-secondary:disabled { opacity: 0.5; cursor: default; }
+.cw-btn-learn { background: #fff; color: #555; }
+.cw-btn-learn:active { opacity: 0.7; }</code></pre>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- step 6 -->
+  <div class="prose-section">
+    <h2><span class="step-n">前端 · 第六步</span> JavaScript 逻辑</h2>
+    <p>两处改动：<strong>①</strong> 在 <code>send()</code> 里检测响应并触发弹窗；<strong>②</strong> 封窗弹窗完整逻辑块。</p>
+
+    <h3>① send() 里添加检测（加在 sticker 处理之后）</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">JavaScript</span>
+        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+      </div>
+      <pre><code><span class="cm">// 在处理 data.sticker 之后加：</span>
+<span class="kw">if</span> (data.window_closed) {
+  <span class="kw">await new</span> <span class="fn">Promise</span>(r => <span class="fn">setTimeout</span>(r, 300)); <span class="cm">// 让气泡先渲染完</span>
+  <span class="fn">showCloseWindowModal</span>(data.window_closed.reason || <span class="str">""</span>);
+}</code></pre>
+    </div>
+
+    <h3>② 弹窗完整逻辑（放在初始化代码里）</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">JavaScript</span>
+        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+      </div>
+      <pre><code><span class="kw">const</span> cwModal     = <span class="fn">document.getElementById</span>(<span class="str">"closeWindowModal"</span>);
+<span class="kw">const</span> cwDescEl    = <span class="fn">document.getElementById</span>(<span class="str">"cwDesc"</span>);
+<span class="kw">const</span> cwErrorEl   = <span class="fn">document.getElementById</span>(<span class="str">"cwError"</span>);
+<span class="kw">const</span> cwGivePlead = <span class="fn">document.getElementById</span>(<span class="str">"cwGivePlead"</span>);
+<span class="kw">const</span> cwNoCont    = <span class="fn">document.getElementById</span>(<span class="str">"cwNoContinue"</span>);
+<span class="kw">const</span> cwLearnBtn  = <span class="fn">document.getElementById</span>(<span class="str">"cwLearnMore"</span>);
+
+<span class="kw">let</span> _cwReasonText = <span class="str">""</span>;
+<span class="kw">let</span> _cwReasonVisible = <span class="kw">false</span>;
+
+<span class="kw">function</span> <span class="fn">showCloseWindowModal</span>(reason) {
+  _cwReasonText    = reason;
+  _cwReasonVisible = <span class="kw">false</span>;
+  cwDescEl.textContent   = <span class="str">""</span>;
+  cwErrorEl.textContent  = <span class="str">""</span>;
+  cwLearnBtn.textContent = <span class="str">"No Learn More"</span>;
+  cwGivePlead.disabled   = <span class="kw">false</span>;
+  cwGivePlead.textContent = <span class="str">"Give Plead"</span>;
+  inputEl.disabled = <span class="kw">true</span>;   <span class="cm">// 禁用输入框</span>
+  sendBtn.disabled = <span class="kw">true</span>;
+  cwModal.classList.<span class="fn">remove</span>(<span class="str">"hidden"</span>);
+}
+
+<span class="kw">function</span> <span class="fn">hideCloseWindowModal</span>() {
+  cwModal.classList.<span class="fn">add</span>(<span class="str">"hidden"</span>);
+  inputEl.disabled = <span class="kw">false</span>;
+  sendBtn.disabled = <span class="kw">false</span>;
+}
+
+<span class="cm">// No Learn More / No Learn Less 切换</span>
+cwLearnBtn.<span class="fn">addEventListener</span>(<span class="str">"click"</span>, () => {
+  _cwReasonVisible = !_cwReasonVisible;
+  cwDescEl.textContent   = _cwReasonVisible ? _cwReasonText : <span class="str">""</span>;
+  cwLearnBtn.textContent = _cwReasonVisible ? <span class="str">"No Learn Less"</span> : <span class="str">"No Learn More"</span>;
+});
+
+<span class="cm">// 不许出去！</span>
+cwNoCont.<span class="fn">addEventListener</span>(<span class="str">"click"</span>, () => <span class="fn">showToast</span>(<span class="str">"不许！"</span>));
+
+<span class="cm">// Give Plead — 求角色放行</span>
+cwGivePlead.<span class="fn">addEventListener</span>(<span class="str">"click"</span>, <span class="kw">async</span> () => {
+  cwGivePlead.disabled    = <span class="kw">true</span>;
+  cwGivePlead.textContent = <span class="str">"传达中……"</span>;
+  cwErrorEl.textContent   = <span class="str">""</span>;
+  <span class="kw">try</span> {
+    <span class="kw">const</span> resp = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"/api/plead"</span>, {
+      method: <span class="str">"POST"</span>,
+      headers: { <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span> },
+      body: <span class="fn">JSON.stringify</span>({ character_id: currentChar }),
+    });
+    <span class="kw">if</span> (!resp.ok) <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="str">"HTTP "</span> + resp.status);
+    <span class="kw">const</span> data = <span class="kw">await</span> resp.<span class="fn">json</span>();
+    <span class="fn">hideCloseWindowModal</span>();
+    <span class="cm">// 把角色的回复渲染成气泡（用你自己的渲染逻辑）</span>
+    <span class="fn">renderAIReply</span>(data);
+  } <span class="kw">catch</span> (e) {
+    cwErrorEl.textContent   = <span class="str">"没送到，再试一次？"</span>;
+    cwGivePlead.disabled    = <span class="kw">false</span>;
+    cwGivePlead.textContent = <span class="str">"Give Plead"</span>;
+  }
+});</code></pre>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- step 7: /api/plead -->
+  <div class="prose-section">
+    <h2><span class="step-n">后端 · 可选</span> /api/plead 端点</h2>
+    <p>Give Plead 和「和好按钮」是两种完全不同的语境，建议分开。<code>/api/plead</code> 的系统提示是「用户在窗口外求你放她进来」，而不是「哄哄我」。</p>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">Python — Flask</span>
+        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+      </div>
+      <pre><code><span class="fn">@app.route</span>(<span class="str">"/api/plead"</span>, methods=[<span class="str">"POST"</span>])
+<span class="kw">def</span> <span class="fn">plead</span>():
+    body = request.json <span class="kw">or</span> {}
+    character_id = body.get(<span class="str">"character_id"</span>, <span class="str">"default"</span>)
+    <span class="kw">if</span> character_id <span class="kw">not in</span> CHARACTERS:
+        <span class="kw">return</span> <span class="fn">jsonify</span>({<span class="str">"error"</span>: <span class="str">"未知角色"</span>}), 400
+    char = CHARACTERS[character_id]
+    plead_msg = (
+        <span class="str">"[系统提示：你刚才关闭了对话窗口，"</span>
+        <span class="str">"用户在窗口外面求你了，说「求求你放我进来嘛」"</span>
+        <span class="str">"——你要怎么回应？用你的风格，不要提及这是系统触发的]"</span>
+    )
+    reply, *_ = <span class="fn">ask_character</span>(char, <span class="str">"default"</span>, plead_msg)
+    <span class="kw">if not</span> reply <span class="kw">or not</span> reply.strip():
+        reply = <span class="str">"(沉默片刻)"</span>
+    reply_id = <span class="fn">save_message</span>(<span class="str">"default"</span>, character_id, <span class="str">"model"</span>, reply)
+    replies = reply.split(<span class="str">"||"</span>) <span class="kw">if</span> <span class="str">"||"</span> <span class="kw">in</span> reply <span class="kw">else</span> reply.split(<span class="str">"\n\n"</span>)
+    replies = [r.strip() <span class="kw">for</span> r <span class="kw">in</span> replies <span class="kw">if</span> r.strip()]
+    <span class="kw">return</span> <span class="fn">jsonify</span>({<span class="str">"reply"</span>: reply, <span class="str">"replies"</span>: replies, <span class="str">"reply_id"</span>: reply_id})</code></pre>
+    </div>
+  </div>
+
+  <hr>
+
+  <footer>
+    <span>Chat paused 实现教程 · <a href="https://github.com/zhizhou-xiee/hug-button" target="_blank">zhizhou-xiee/hug-button</a></span>
+    <span>自己搭前端的宝宝们加油 ☁</span>
+  </footer>
+</div>
+
+<script>
+  // ── theme toggle ──
+  function toggleTheme() {
+    const root = document.documentElement;
+    const cur = root.getAttribute("data-theme");
+    const isDark = cur === "dark" || (!cur && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    root.setAttribute("data-theme", isDark ? "light" : "dark");
+  }
+
+  // ── toast ──
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 1800);
+  }
+
+  // ── copy buttons ──
+  function copyCode(btn) {
+    const pre = btn.closest(".code-wrap").querySelector("pre");
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = "已复制 ✓";
+      btn.classList.add("copied");
+      setTimeout(() => { btn.textContent = "复制"; btn.classList.remove("copied"); }, 1800);
+    });
+  }
+
+  // ── demo modal ──
+  let _demoReasonVisible = false;
+
+  function openMini() {
+    _demoReasonVisible = false;
+    document.getElementById("miniDesc").textContent = "";
+    document.getElementById("miniErr").textContent = "";
+    document.getElementById("miniLearn").textContent = "No Learn More";
+    document.getElementById("miniPlead").disabled = false;
+    document.getElementById("miniPlead").textContent = "Give Plead";
+    document.getElementById("demoOverlay").classList.add("open");
+  }
+  function closeMini() {
+    document.getElementById("demoOverlay").classList.remove("open");
+  }
+
+  document.getElementById("miniLearn").addEventListener("click", () => {
+    _demoReasonVisible = !_demoReasonVisible;
+    document.getElementById("miniDesc").textContent = _demoReasonVisible
+      ? "你先去睡觉，明天再说。" : "";
+    document.getElementById("miniLearn").textContent = _demoReasonVisible
+      ? "No Learn Less" : "No Learn More";
+  });
+
+  document.getElementById("miniNoCont").addEventListener("click", () => showToast("不许！"));
+
+  document.getElementById("miniPlead").addEventListener("click", async () => {
+    const btn = document.getElementById("miniPlead");
+    btn.disabled = true;
+    btn.textContent = "传达中……";
+    await new Promise(r => setTimeout(r, 1200));
+    document.getElementById("miniErr").textContent = "（演示模式，角色没有回应）";
+    btn.disabled = false;
+    btn.textContent = "Give Plead";
+  });
+</script>
