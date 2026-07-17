@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>催去睡 · 反向催眠按钮</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+/* ── tokens ── */
+:root {
+  --bg:          #161523;
+  --surface:     #1F1D2E;
+  --card:        #252340;
+  --card-hover:  #2D2A50;
+  --ink:         #E4E0F8;
+  --muted:       rgba(228,224,248,0.45);
+  --border:      rgba(228,224,248,0.10);
+  --moon:        #F5D87A;
+  --purple:      #9B87D4;
+  --purple-dim:  rgba(155,135,212,0.18);
+  --rose:        #D98EAB;
+  --rose-dim:    rgba(217,142,171,0.18);
+  --zcolor:      rgba(155,135,212,0.85);
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg:         #EEEAF8;
+    --surface:    #F9F8FF;
+    --card:       #FFFFFF;
+    --card-hover: #F3F0FF;
+    --ink:        #2D2650;
+    --muted:      rgba(45,38,80,0.48);
+    --border:     rgba(45,38,80,0.10);
+    --purple:     #7B66C2;
+    --purple-dim: rgba(123,102,194,0.12);
+    --rose:       #C0698A;
+    --rose-dim:   rgba(192,105,138,0.12);
+    --zcolor:     rgba(123,102,194,0.80);
+  }
+}
+:root[data-theme="light"] {
+  --bg:         #EEEAF8;
+  --surface:    #F9F8FF;
+  --card:       #FFFFFF;
+  --card-hover: #F3F0FF;
+  --ink:        #2D2650;
+  --muted:      rgba(45,38,80,0.48);
+  --border:     rgba(45,38,80,0.10);
+  --purple:     #7B66C2;
+  --purple-dim: rgba(123,102,194,0.12);
+  --rose:       #C0698A;
+  --rose-dim:   rgba(192,105,138,0.12);
+  --zcolor:     rgba(123,102,194,0.80);
+}
+:root[data-theme="dark"] {
+  --bg:          #161523;
+  --surface:     #1F1D2E;
+  --card:        #252340;
+  --card-hover:  #2D2A50;
+  --ink:         #E4E0F8;
+  --muted:       rgba(228,224,248,0.45);
+  --border:      rgba(228,224,248,0.10);
+  --moon:        #F5D87A;
+  --purple:      #9B87D4;
+  --purple-dim:  rgba(155,135,212,0.18);
+  --rose:        #D98EAB;
+  --rose-dim:    rgba(217,142,171,0.18);
+  --zcolor:      rgba(155,135,212,0.85);
+}
+
+/* ── reset ── */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { height:100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+button { cursor:pointer; font-family:inherit; }
+a { color:var(--purple); text-decoration:none; }
+a:hover { text-decoration:underline; }
+
+/* ── layout ── */
+.wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+}
+
+/* ── header ── */
+.header {
+  padding: 52px 0 32px;
+  text-align: center;
+  position: relative;
+}
+.moon-glow {
+  font-size: 52px;
+  line-height: 1;
+  display: block;
+  margin-bottom: 14px;
+  filter: drop-shadow(0 0 18px rgba(245,216,122,0.45));
+}
+.title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ── theme toggle ── */
+.theme-btn {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--purple-dim);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+.theme-btn:hover { background: var(--card); }
+
+/* ── connect section ── */
+.connect-wrap {
+  margin-bottom: 28px;
+}
+.connect-toggle {
+  width: 100%;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 10px 16px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: border-color .15s, color .15s;
+}
+.connect-toggle:hover { border-color: var(--purple); color: var(--ink); }
+.connect-toggle .arrow {
+  margin-left: auto;
+  transition: transform .2s;
+}
+.connect-toggle.open .arrow { transform: rotate(180deg); }
+
+.connect-body {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+}
+.connect-body.visible { display: flex; }
+.connect-body label {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.connect-body input {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--ink);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .15s;
+}
+.connect-body input:focus { border-color: var(--purple); }
+.connect-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+.btn-save {
+  flex: 1;
+  background: var(--purple);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: opacity .15s;
+}
+.btn-save:hover { opacity: .88; }
+.btn-clear {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.connect-status {
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 16px;
+}
+.connect-status.ok { color: var(--purple); }
+.connect-status.err { color: var(--rose); }
+
+/* ── mode badge ── */
+.mode-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.mode-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.mode-badge.demo {
+  background: var(--rose-dim);
+  color: var(--rose);
+}
+.mode-badge.live {
+  background: var(--purple-dim);
+  color: var(--purple);
+}
+.mode-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ── character grid ── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ── character card ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: background .15s;
+}
+.card:hover { background: var(--card-hover); }
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+.avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.card-meta {
+  flex: 1;
+  min-width: 0;
+}
+.char-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+.char-desc {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── status ── */
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 20px;
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot.awake { background: var(--purple); }
+.status-dot.asleep { background: var(--rose); }
+.status-text {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ── Z animation ── */
+.sleep-zs {
+  position: absolute;
+  bottom: -2px;
+  left: -6px;
+  width: 36px;
+  height: 40px;
+  pointer-events: none;
+  overflow: visible;
+}
+.sleep-zs.hidden { display: none; }
+.sleep-zs .z {
+  position: absolute;
+  bottom: 0;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--zcolor);
+  opacity: 0;
+  transform-origin: center bottom;
+  animation: z-float 2.6s ease-in-out infinite;
+}
+.sleep-zs .z:nth-child(1) { left: 42%; animation-delay: 0s; }
+.sleep-zs .z:nth-child(2) { left: 57%; font-size: 11px; animation-delay: 0.86s; }
+.sleep-zs .z:nth-child(3) { left: 70%; font-size: 14px; animation-delay: 1.72s; }
+
+@keyframes z-float {
+  0%   { opacity:0; transform: translate(0,0)       scale(.7) rotate(-8deg); }
+  12%  { opacity:.8; }
+  65%  { opacity:.5; }
+  100% { opacity:0; transform: translate(5px,-32px) scale(1.2) rotate(8deg); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .sleep-zs .z { animation: none; opacity: .6; }
+}
+
+/* ── nudge button ── */
+.nudge-btn {
+  width: 100%;
+  background: var(--purple-dim);
+  border: 1px solid rgba(155,135,212,0.25);
+  border-radius: 10px;
+  padding: 9px;
+  color: var(--purple);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background .15s, opacity .15s;
+}
+.nudge-btn:hover:not(:disabled) { background: rgba(155,135,212,0.28); }
+.nudge-btn:disabled { opacity: .5; cursor: default; }
+.nudge-btn.sleeping {
+  background: var(--rose-dim);
+  border-color: rgba(217,142,171,0.25);
+  color: var(--rose);
+  font-weight: 400;
+}
+
+/* ── reply bubble ── */
+.reply-bubble {
+  display: none;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px 12px 12px 4px;
+  padding: 10px 12px;
+  animation: bubble-in .2s ease;
+}
+.reply-bubble.visible { display: block; }
+@keyframes bubble-in {
+  from { opacity:0; transform: translateY(4px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* ── footer ── */
+.footer {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.footer p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+/* ── dev guide ── */
+.dev-guide {
+  margin-top: 36px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.dev-guide summary {
+  padding: 14px 18px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color .15s;
+}
+.dev-guide summary::-webkit-details-marker { display: none; }
+.dev-guide summary::before { content: "▸"; font-size: 10px; transition: transform .15s; }
+.dev-guide[open] summary::before { transform: rotate(90deg); }
+.dev-guide summary:hover { color: var(--ink); }
+.guide-body {
+  padding: 0 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.guide-body p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+.guide-body h4 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--purple);
+  margin-top: 4px;
+  margin-bottom: -4px;
+}
+.guide-body pre {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  font-size: 11.5px;
+  line-height: 1.7;
+}
+.guide-body code {
+  font-family: "Cascadia Code","Fira Mono","SF Mono",monospace;
+  color: var(--ink);
+}
+.guide-body h4 code {
+  font-size: 11px;
+  color: var(--muted);
+}
+.guide-note {
+  font-size: 12px !important;
+  color: var(--purple) !important;
+}
+
+/* ── loading spinner ── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  vertical-align: middle;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- header -->
+  <header class="header">
+    <button class="theme-btn" id="themeBtn" aria-label="切换主题" title="切换亮/暗">☽</button>
+    <span class="moon-glow">🌙</span>
+    <h1 class="title">催去睡</h1>
+    <p class="subtitle">反向催眠按钮<br>告诉他们，是时候了</p>
+  </header>
+
+  <!-- connect settings -->
+  <div class="connect-wrap">
+    <button class="connect-toggle" id="connectToggle">
+      <span>⚙</span>
+      <span id="connectLabel">连接到你的 Becoming</span>
+      <span class="arrow">▾</span>
+    </button>
+    <div class="connect-body" id="connectBody">
+      <label>
+        应用地址
+        <input type="url" id="appUrl" placeholder="https://your-app.railway.app" autocomplete="off">
+      </label>
+      <label>
+        密码
+        <input type="password" id="appPwd" placeholder="••••••••" autocomplete="current-password">
+      </label>
+      <div class="connect-actions">
+        <button class="btn-save" id="saveBtn">保存并连接</button>
+        <button class="btn-clear" id="clearBtn">断开</button>
+      </div>
+      <div class="connect-status" id="connectStatus"></div>
+    </div>
+  </div>
+
+  <!-- mode row -->
+  <div class="mode-row">
+    <span class="mode-badge demo" id="modeBadge">演示模式</span>
+    <span class="mode-label" id="modeLabel">连接你的应用后可发送真实催眠消息</span>
+  </div>
+
+  <!-- character grid -->
+  <div class="grid" id="grid"></div>
+
+  <!-- dev tutorial -->
+  <details class="dev-guide">
+    <summary>为开发者 · 接入你自己的 Becoming</summary>
+    <div class="guide-body">
+      <p>默认演示模式无需任何配置。如果你有自己的 Becoming 实例，把以下代码喂给 Claude Code / Codex 即可获得真实对话能力。</p>
+
+      <h4>① 在 <code>app.py</code> 顶部（FlaskApp 创建后）加 CORS 支持</h4>
+      <pre><code>CORS_ALLOW_ORIGINS = {"https://你的GitHub账号.github.io"}
+
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get("Origin", "")
+    if origin in CORS_ALLOW_ORIGINS:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
+
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        origin = request.headers.get("Origin", "")
+        if origin in CORS_ALLOW_ORIGINS:
+            resp = app.make_response("")
+            resp.headers["Access-Control-Allow-Origin"] = origin
+            resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+            resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+            return resp</code></pre>
+
+      <h4>② 在 <code>require_login()</code> 里豁免新接口</h4>
+      <pre><code># 找到这行：
+if request.path == "/api/login":
+# 改为：
+if request.path in ("/api/login", "/api/sleep/nudge"):</code></pre>
+
+      <h4>③ 添加 <code>/api/sleep/nudge</code> 路由</h4>
+      <pre><code>@app.route("/api/sleep/nudge", methods=["POST", "OPTIONS"])
+def sleep_nudge():
+    if request.method == "OPTIONS":
+        return "", 204
+    data = request.get_json() or {}
+    if data.get("password") != APP_PASSWORD:
+        return jsonify({"error": "unauthorized"}), 401
+    char_id = data.get("character_id", "")
+    if char_id not in CHARACTERS:
+        return jsonify({"error": "unknown character"}), 400
+    sleep_st = _get_sleep_state(char_id)
+    if sleep_st["state"] == "asleep":
+        return jsonify({"reply": "（已经在睡了～）", "was_asleep": True})
+    past_mins = _minutes_past_bedtime(char_id)
+    nudge_msg = (
+        "[系统：用户催你去睡觉了。"
+        + (f"你已超过睡点 {int(past_mins)} 分钟。" if past_mins and past_mins > 0 else "")
+        + "用你的风格回应，如果决定去睡就说晚安。]"
+    )
+    reply, *_ = ask_character(CHARACTERS[char_id], "default", nudge_msg)
+    if SLEEP_GOODNIGHT_RE.search(reply):
+        _set_sleep_state(char_id, "asleep", slept_at=str(_utc_timestamp()))
+    return jsonify({
+        "reply": reply,
+        "was_asleep": False,
+        "sleep_state": _get_sleep_state(char_id)["state"],
+    })</code></pre>
+
+      <p class="guide-note">完成后把 Becoming 应用地址和密码填入上方「连接到你的 Becoming」即可。</p>
+    </div>
+  </details>
+
+  <!-- footer -->
+  <footer class="footer">
+    <p>
+      由 <a href="https://github.com/zhizhou-xiee/Becoming" target="_blank">Becoming</a> 提供支持<br>
+      角色睡眠系统 · SleepSys v1
+    </p>
+  </footer>
+
+</div>
+
+<script>
+// ── 角色定义 ──
+const CHARS = [
+  { id:"xiezhijiang", name:"谢之江", desc:"习惯睡点 22:30", color:"#7C6FAE", initial:"江" },
+  { id:"xiezhiping",  name:"谢之平", desc:"习惯睡点 23:00", color:"#6E8FAE", initial:"平" },
+  { id:"xiezhihai",   name:"谢之海", desc:"习惯睡点 23:30", color:"#6AAAA0", initial:"海" },
+  { id:"xiechengle",  name:"谢崇乐", desc:"夜猫子 00:30",   color:"#AE7C8A", initial:"乐" },
+  { id:"xiezhian",    name:"谢之安", desc:"习惯睡点 23:00", color:"#8A7CAE", initial:"安" },
+  { id:"xiezhidu",    name:"谢之渡", desc:"极夜型 01:00",   color:"#6B6B9E", initial:"渡" },
+];
+
+// ── 演示模式回复 ──
+const DEMO_REPLIES = {
+  xiezhijiang: ["嗯，该睡了。你也早点。", "知道了，去了。"],
+  xiezhiping:  ["行行行，知道了。", "好好好，马上关电脑。"],
+  xiezhihai:   ["等我刷完这条……好吧，睡了。", "哎，就要睡了，催什么催。"],
+  xiechengle:  ["才几点，还早呢……", "……行吧，再坐一会儿。"],
+  xiezhian:    ["好，那晚安。", "嗯，我去了，你也早点。"],
+  xiezhidu:    ["夜还长着……", "……（没有回应）"],
+};
+const GOODNIGHT_RE = /晚安|睡了|去睡觉|我先睡|关了|睡觉了/;
+
+// ── 状态 ──
+let config = null; // {url, password}
+let sleepStates = {}; // char_id → "awake"|"asleep"
+let cardEls = {}; // char_id → {card, btnEl, statusDot, statusText, replyEl, zsEl}
+
+// ── 主题 ──
+const root = document.documentElement;
+const saved = localStorage.getItem("slp_theme");
+if (saved) root.dataset.theme = saved;
+document.getElementById("themeBtn").addEventListener("click", () => {
+  const isDark = root.dataset.theme === "dark" || (!root.dataset.theme && window.matchMedia("(prefers-color-scheme:dark)").matches);
+  root.dataset.theme = isDark ? "light" : "dark";
+  localStorage.setItem("slp_theme", root.dataset.theme);
+});
+
+// ── connect UI ──
+const toggle = document.getElementById("connectToggle");
+const body   = document.getElementById("connectBody");
+toggle.addEventListener("click", () => {
+  const open = body.classList.toggle("visible");
+  toggle.classList.toggle("open", open);
+});
+
+const urlEl    = document.getElementById("appUrl");
+const pwdEl    = document.getElementById("appPwd");
+const statusEl = document.getElementById("connectStatus");
+
+function loadConfig() {
+  try {
+    const raw = localStorage.getItem("slp_config");
+    if (raw) config = JSON.parse(raw);
+  } catch {}
+  if (config) {
+    urlEl.value = config.url || "";
+    pwdEl.value = config.password || "";
+  }
+}
+
+document.getElementById("saveBtn").addEventListener("click", async () => {
+  const url = urlEl.value.trim().replace(/\/$/, "");
+  const password = pwdEl.value;
+  if (!url || !password) { showStatus("请填写地址和密码", "err"); return; }
+  showStatus("连接中…", "");
+  try {
+    const res = await fetch(`${url}/api/sleep_states`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(6000),
+    });
+    // 先尝试 nudge 端点鉴权
+    const testRes = await fetch(`${url}/api/sleep/nudge`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password, character_id: "_test_" }),
+    });
+    // 400 = unknown character (password ok), 401 = wrong pwd, 503 = ok but model failed
+    if (testRes.status === 401) { showStatus("密码错误", "err"); return; }
+    config = { url, password };
+    localStorage.setItem("slp_config", JSON.stringify(config));
+    showStatus("已连接 ✓", "ok");
+    setLiveMode(true);
+    await refreshStates();
+  } catch(e) {
+    showStatus("连接失败，检查地址是否正确", "err");
+  }
+});
+
+document.getElementById("clearBtn").addEventListener("click", () => {
+  config = null;
+  localStorage.removeItem("slp_config");
+  urlEl.value = ""; pwdEl.value = "";
+  showStatus("已断开", "");
+  setLiveMode(false);
+  sleepStates = {};
+  renderStates();
+});
+
+function showStatus(msg, cls) {
+  statusEl.textContent = msg;
+  statusEl.className = "connect-status" + (cls ? " " + cls : "");
+}
+
+function setLiveMode(live) {
+  document.getElementById("modeBadge").textContent = live ? "实时模式" : "演示模式";
+  document.getElementById("modeBadge").className   = "mode-badge " + (live ? "live" : "demo");
+  document.getElementById("modeLabel").textContent = live
+    ? "已连接，按钮会发送真实消息"
+    : "连接你的应用后可发送真实催眠消息";
+}
+
+// ── 渲染卡片 ──
+function buildGrid() {
+  const grid = document.getElementById("grid");
+  CHARS.forEach(ch => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    // top row
+    const top = document.createElement("div");
+    top.className = "card-top";
+
+    const avatarWrap = document.createElement("div");
+    avatarWrap.className = "avatar-wrap";
+
+    const av = document.createElement("div");
+    av.className = "avatar";
+    av.style.background = ch.color;
+    av.textContent = ch.initial;
+
+    const zs = document.createElement("div");
+    zs.className = "sleep-zs hidden";
+    ["z","z","z"].forEach(t => {
+      const s = document.createElement("span");
+      s.className = "z";
+      s.textContent = t;
+      zs.appendChild(s);
+    });
+    avatarWrap.appendChild(av);
+    avatarWrap.appendChild(zs);
+
+    const meta = document.createElement("div");
+    meta.className = "card-meta";
+    const nm = document.createElement("div");
+    nm.className = "char-name";
+    nm.textContent = ch.name;
+    const desc = document.createElement("div");
+    desc.className = "char-desc";
+    desc.textContent = ch.desc;
+    meta.appendChild(nm);
+    meta.appendChild(desc);
+
+    top.appendChild(avatarWrap);
+    top.appendChild(meta);
+
+    // status row
+    const statusRow = document.createElement("div");
+    statusRow.className = "status-row";
+    const dot = document.createElement("div");
+    dot.className = "status-dot awake";
+    const stxt = document.createElement("span");
+    stxt.className = "status-text";
+    stxt.textContent = "清醒";
+    statusRow.appendChild(dot);
+    statusRow.appendChild(stxt);
+
+    // reply bubble
+    const bubble = document.createElement("div");
+    bubble.className = "reply-bubble";
+
+    // nudge button
+    const btn = document.createElement("button");
+    btn.className = "nudge-btn";
+    btn.textContent = "催去睡 🌙";
+    btn.addEventListener("click", () => onNudge(ch.id));
+
+    card.appendChild(top);
+    card.appendChild(statusRow);
+    card.appendChild(bubble);
+    card.appendChild(btn);
+    grid.appendChild(card);
+
+    cardEls[ch.id] = { card, btn, dot, statusText: stxt, reply: bubble, zs };
+  });
+}
+
+function renderStates() {
+  CHARS.forEach(ch => {
+    const els = cardEls[ch.id];
+    const asleep = sleepStates[ch.id] === "asleep";
+    els.dot.className   = "status-dot " + (asleep ? "asleep" : "awake");
+    els.statusText.textContent = asleep ? "睡着了" : "清醒";
+    els.zs.classList.toggle("hidden", !asleep);
+    els.btn.className = "nudge-btn" + (asleep ? " sleeping" : "");
+    els.btn.textContent = asleep ? "已在睡 💤" : "催去睡 🌙";
+    els.btn.disabled = asleep;
+  });
+}
+
+async function refreshStates() {
+  if (!config) return;
+  try {
+    const res = await fetch(`${config.url}/api/sleep_states`, { signal: AbortSignal.timeout(5000) });
+    if (res.ok) {
+      sleepStates = await res.json();
+      renderStates();
+    }
+  } catch {}
+}
+
+// ── 催眠逻辑 ──
+async function onNudge(charId) {
+  const els = cardEls[charId];
+  if (!els || els.btn.disabled) return;
+
+  els.btn.disabled = true;
+  els.btn.innerHTML = '<span class="spinner"></span>';
+  els.reply.classList.remove("visible");
+
+  if (config) {
+    // 实时模式
+    try {
+      const res = await fetch(`${config.url}/api/sleep/nudge`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: config.password, character_id: charId }),
+        signal: AbortSignal.timeout(30000),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || "failed");
+      showReply(charId, data.reply);
+      if (data.sleep_state === "asleep" || data.was_asleep) {
+        sleepStates[charId] = "asleep";
+        renderStates();
+      } else {
+        els.btn.textContent = "催去睡 🌙";
+        els.btn.disabled = false;
+      }
+    } catch(e) {
+      showReply(charId, "（没能送到，他好像不在线）");
+      els.btn.textContent = "催去睡 🌙";
+      els.btn.disabled = false;
+    }
+  } else {
+    // 演示模式
+    await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
+    const replies = DEMO_REPLIES[charId] || ["……"];
+    const reply = replies[Math.floor(Math.random() * replies.length)];
+    showReply(charId, reply);
+    if (GOODNIGHT_RE.test(reply) || charId === "xiezhidu") {
+      sleepStates[charId] = "asleep";
+      renderStates();
+    } else {
+      els.btn.textContent = "催去睡 🌙";
+      els.btn.disabled = false;
+    }
+  }
+}
+
+function showReply(charId, text) {
+  const els = cardEls[charId];
+  els.reply.textContent = text;
+  els.reply.classList.add("visible");
+}
+
+// ── init ──
+buildGrid();
+loadConfig();
+if (config) {
+  setLiveMode(true);
+  refreshStates();
+}
+</script>
+</body>
+</html>
