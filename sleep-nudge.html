@@ -1,889 +1,217 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<title>催去睡 · 反向催眠按钮</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>让你的 AI 角色学会睡觉 · 设计教程</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-/* ── tokens ── */
-:root {
-  --bg:          #161523;
-  --surface:     #1F1D2E;
-  --card:        #252340;
-  --card-hover:  #2D2A50;
-  --ink:         #E4E0F8;
-  --muted:       rgba(228,224,248,0.45);
-  --border:      rgba(228,224,248,0.10);
-  --moon:        #F5D87A;
-  --purple:      #9B87D4;
-  --purple-dim:  rgba(155,135,212,0.18);
-  --rose:        #D98EAB;
-  --rose-dim:    rgba(217,142,171,0.18);
-  --zcolor:      rgba(155,135,212,0.85);
+:root{
+  --night:#0d1220;        /* 深夜底色 */
+  --night-soft:#151c30;   /* 卡片底 */
+  --moon:#e8e4d8;         /* 月光象牙,正文 */
+  --moon-dim:#9aa0b4;     /* 次级文字 */
+  --lamp:#f2b263;         /* 台灯暖黄,唯一强调色 */
+  --dawn:#7fa8c9;         /* 黎明青,代码/链接 */
+  --line:rgba(232,228,216,.12);
+  --mono:'JetBrains Mono',monospace;
 }
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg:         #EEEAF8;
-    --surface:    #F9F8FF;
-    --card:       #FFFFFF;
-    --card-hover: #F3F0FF;
-    --ink:        #2D2650;
-    --muted:      rgba(45,38,80,0.48);
-    --border:     rgba(45,38,80,0.10);
-    --purple:     #7B66C2;
-    --purple-dim: rgba(123,102,194,0.12);
-    --rose:       #C0698A;
-    --rose-dim:   rgba(192,105,138,0.12);
-    --zcolor:     rgba(123,102,194,0.80);
-  }
-}
-:root[data-theme="light"] {
-  --bg:         #EEEAF8;
-  --surface:    #F9F8FF;
-  --card:       #FFFFFF;
-  --card-hover: #F3F0FF;
-  --ink:        #2D2650;
-  --muted:      rgba(45,38,80,0.48);
-  --border:     rgba(45,38,80,0.10);
-  --purple:     #7B66C2;
-  --purple-dim: rgba(123,102,194,0.12);
-  --rose:       #C0698A;
-  --rose-dim:   rgba(192,105,138,0.12);
-  --zcolor:     rgba(123,102,194,0.80);
-}
-:root[data-theme="dark"] {
-  --bg:          #161523;
-  --surface:     #1F1D2E;
-  --card:        #252340;
-  --card-hover:  #2D2A50;
-  --ink:         #E4E0F8;
-  --muted:       rgba(228,224,248,0.45);
-  --border:      rgba(228,224,248,0.10);
-  --moon:        #F5D87A;
-  --purple:      #9B87D4;
-  --purple-dim:  rgba(155,135,212,0.18);
-  --rose:        #D98EAB;
-  --rose-dim:    rgba(217,142,171,0.18);
-  --zcolor:      rgba(155,135,212,0.85);
-}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{background:var(--night);color:var(--moon);font-family:'Noto Sans SC',sans-serif;font-weight:300;line-height:1.85;font-size:16px}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px}
 
-/* ── reset ── */
-*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-html { height:100%; }
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
-  min-height: 100%;
-  -webkit-font-smoothing: antialiased;
-}
-button { cursor:pointer; font-family:inherit; }
-a { color:var(--purple); text-decoration:none; }
-a:hover { text-decoration:underline; }
+/* ---- Hero:一天的时间轴 ---- */
+header{padding:72px 0 40px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.25em;color:var(--lamp);text-transform:uppercase}
+h1{font-family:'Noto Serif SC',serif;font-weight:900;font-size:clamp(34px,7vw,54px);line-height:1.25;margin:14px 0 18px}
+.lede{color:var(--moon-dim);font-size:17px;max-width:38em}
+.timeline{margin:44px 0 8px;position:relative;height:64px;border-radius:32px;overflow:hidden;
+  background:linear-gradient(90deg,#3a2f4d 0%,#8a5a3c 8%,#c9a15e 16%,#a8b8c9 30%,#a8b8c9 62%,#c98a5e 72%,#3d3556 82%,#141a2e 90%,#0d1220 100%)}
+.timeline .tick{position:absolute;top:0;bottom:0;display:flex;align-items:flex-end;padding-bottom:6px;font-family:var(--mono);font-size:10px;color:rgba(13,18,32,.75);font-weight:600}
+.timeline .night-tick{color:rgba(232,228,216,.6)}
+.tl-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--moon-dim);margin-top:8px}
+.tl-caption{text-align:center;font-size:13px;color:var(--moon-dim);margin-top:14px}
+.tl-caption b{color:var(--lamp);font-weight:500}
 
-/* ── layout ── */
-.wrap {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 0 20px 80px;
-}
+/* ---- 正文结构 ---- */
+section{padding:52px 0;border-bottom:1px solid var(--line)}
+h2{font-family:'Noto Serif SC',serif;font-weight:600;font-size:26px;margin-bottom:6px}
+.h2-sub{font-family:var(--mono);font-size:12px;color:var(--lamp);letter-spacing:.15em;margin-bottom:22px}
+h3{font-weight:500;font-size:17px;margin:30px 0 10px;color:var(--moon)}
+p{margin-bottom:14px;color:var(--moon-dim)}
+p b,li b{color:var(--moon);font-weight:500}
+ul,ol{margin:0 0 14px 1.3em;color:var(--moon-dim)}
+li{margin-bottom:8px}
+code{font-family:var(--mono);font-size:.88em;background:var(--night-soft);padding:2px 6px;border-radius:4px;color:var(--dawn)}
+pre{background:var(--night-soft);border:1px solid var(--line);border-radius:10px;padding:18px;overflow-x:auto;margin:16px 0;line-height:1.6}
+pre code{background:none;padding:0;font-size:13px;color:var(--moon)}
+pre .c{color:var(--moon-dim)}
+pre .k{color:var(--lamp)}
+pre .s{color:var(--dawn)}
+.callout{border-left:3px solid var(--lamp);background:var(--night-soft);padding:14px 18px;border-radius:0 10px 10px 0;margin:18px 0;font-size:14.5px;color:var(--moon-dim)}
+.callout b{color:var(--lamp);font-weight:500}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th{text-align:left;font-weight:500;color:var(--moon);border-bottom:1px solid var(--lamp);padding:8px 10px;font-family:var(--mono);font-size:12px;letter-spacing:.05em}
+td{padding:9px 10px;border-bottom:1px solid var(--line);color:var(--moon-dim);vertical-align:top}
+td:first-child{font-family:var(--mono);font-size:13px;color:var(--dawn);white-space:nowrap}
 
-/* ── header ── */
-.header {
-  padding: 52px 0 32px;
-  text-align: center;
-  position: relative;
-}
-.moon-glow {
-  font-size: 52px;
-  line-height: 1;
-  display: block;
-  margin-bottom: 14px;
-  filter: drop-shadow(0 0 18px rgba(245,216,122,0.45));
-}
-.title {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  color: var(--ink);
-  margin-bottom: 8px;
-}
-.subtitle {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.6;
-}
+/* 困意档位卡 */
+.stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:18px 0}
+.stage{background:var(--night-soft);border:1px solid var(--line);border-radius:10px;padding:14px}
+.stage .t{font-family:var(--mono);font-size:11px;color:var(--lamp);letter-spacing:.1em;margin-bottom:6px}
+.stage .n{font-weight:500;font-size:15px;color:var(--moon);margin-bottom:4px}
+.stage .d{font-size:12.5px;color:var(--moon-dim);line-height:1.6}
 
-/* ── theme toggle ── */
-.theme-btn {
-  position: absolute;
-  top: 52px;
-  right: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--purple-dim);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background .15s;
-}
-.theme-btn:hover { background: var(--card); }
+/* 复制块 */
+.prompt-box{position:relative;background:var(--night-soft);border:1px solid var(--lamp);border-radius:12px;padding:20px;margin:20px 0}
+.prompt-box h4{font-family:var(--mono);font-size:12px;color:var(--lamp);letter-spacing:.15em;margin-bottom:12px}
+.prompt-box pre{border:none;background:rgba(13,18,32,.6);margin:0}
+.copy-btn{position:absolute;top:14px;right:14px;background:var(--lamp);color:var(--night);border:none;border-radius:6px;padding:6px 14px;font-family:var(--mono);font-size:12px;font-weight:600;cursor:pointer}
+.copy-btn:focus-visible{outline:2px solid var(--moon);outline-offset:2px}
 
-/* ── connect section ── */
-.connect-wrap {
-  margin-bottom: 28px;
-}
-.connect-toggle {
-  width: 100%;
-  background: none;
-  border: 1px dashed var(--border);
-  border-radius: 12px;
-  padding: 10px 16px;
-  color: var(--muted);
-  font-size: 13px;
-  text-align: left;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: border-color .15s, color .15s;
-}
-.connect-toggle:hover { border-color: var(--purple); color: var(--ink); }
-.connect-toggle .arrow {
-  margin-left: auto;
-  transition: transform .2s;
-}
-.connect-toggle.open .arrow { transform: rotate(180deg); }
-
-.connect-body {
-  display: none;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-top: none;
-  border-radius: 0 0 12px 12px;
-}
-.connect-body.visible { display: flex; }
-.connect-body label {
-  font-size: 12px;
-  color: var(--muted);
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.connect-body input {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  color: var(--ink);
-  font-size: 13px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color .15s;
-}
-.connect-body input:focus { border-color: var(--purple); }
-.connect-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 2px;
-}
-.btn-save {
-  flex: 1;
-  background: var(--purple);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 9px;
-  font-size: 13px;
-  font-weight: 600;
-  transition: opacity .15s;
-}
-.btn-save:hover { opacity: .88; }
-.btn-clear {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 9px 14px;
-  color: var(--muted);
-  font-size: 13px;
-}
-.connect-status {
-  font-size: 12px;
-  color: var(--muted);
-  min-height: 16px;
-}
-.connect-status.ok { color: var(--purple); }
-.connect-status.err { color: var(--rose); }
-
-/* ── mode badge ── */
-.mode-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-.mode-badge {
-  font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-weight: 600;
-  letter-spacing: .02em;
-}
-.mode-badge.demo {
-  background: var(--rose-dim);
-  color: var(--rose);
-}
-.mode-badge.live {
-  background: var(--purple-dim);
-  color: var(--purple);
-}
-.mode-label {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-/* ── character grid ── */
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-/* ── character card ── */
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 18px 16px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  transition: background .15s;
-}
-.card:hover { background: var(--card-hover); }
-
-.card-top {
-  display: flex;
-  align-items: flex-start;
-  gap: 11px;
-}
-.avatar-wrap {
-  position: relative;
-  flex-shrink: 0;
-}
-.avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 700;
-  color: #fff;
-  flex-shrink: 0;
-}
-.card-meta {
-  flex: 1;
-  min-width: 0;
-}
-.char-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink);
-  margin-bottom: 3px;
-}
-.char-desc {
-  font-size: 11px;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ── status ── */
-.status-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 20px;
-}
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.status-dot.awake { background: var(--purple); }
-.status-dot.asleep { background: var(--rose); }
-.status-text {
-  font-size: 11px;
-  color: var(--muted);
-}
-
-/* ── Z animation ── */
-.sleep-zs {
-  position: absolute;
-  bottom: -2px;
-  left: -6px;
-  width: 36px;
-  height: 40px;
-  pointer-events: none;
-  overflow: visible;
-}
-.sleep-zs.hidden { display: none; }
-.sleep-zs .z {
-  position: absolute;
-  bottom: 0;
-  font-size: 9px;
-  font-weight: 800;
-  color: var(--zcolor);
-  opacity: 0;
-  transform-origin: center bottom;
-  animation: z-float 2.6s ease-in-out infinite;
-}
-.sleep-zs .z:nth-child(1) { left: 42%; animation-delay: 0s; }
-.sleep-zs .z:nth-child(2) { left: 57%; font-size: 11px; animation-delay: 0.86s; }
-.sleep-zs .z:nth-child(3) { left: 70%; font-size: 14px; animation-delay: 1.72s; }
-
-@keyframes z-float {
-  0%   { opacity:0; transform: translate(0,0)       scale(.7) rotate(-8deg); }
-  12%  { opacity:.8; }
-  65%  { opacity:.5; }
-  100% { opacity:0; transform: translate(5px,-32px) scale(1.2) rotate(8deg); }
-}
-@media (prefers-reduced-motion:reduce) {
-  .sleep-zs .z { animation: none; opacity: .6; }
-}
-
-/* ── nudge button ── */
-.nudge-btn {
-  width: 100%;
-  background: var(--purple-dim);
-  border: 1px solid rgba(155,135,212,0.25);
-  border-radius: 10px;
-  padding: 9px;
-  color: var(--purple);
-  font-size: 13px;
-  font-weight: 600;
-  transition: background .15s, opacity .15s;
-}
-.nudge-btn:hover:not(:disabled) { background: rgba(155,135,212,0.28); }
-.nudge-btn:disabled { opacity: .5; cursor: default; }
-.nudge-btn.sleeping {
-  background: var(--rose-dim);
-  border-color: rgba(217,142,171,0.25);
-  color: var(--rose);
-  font-weight: 400;
-}
-
-/* ── reply bubble ── */
-.reply-bubble {
-  display: none;
-  font-size: 13px;
-  line-height: 1.65;
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px 12px 12px 4px;
-  padding: 10px 12px;
-  animation: bubble-in .2s ease;
-}
-.reply-bubble.visible { display: block; }
-@keyframes bubble-in {
-  from { opacity:0; transform: translateY(4px); }
-  to   { opacity:1; transform: translateY(0); }
-}
-
-/* ── footer ── */
-.footer {
-  margin-top: 48px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border);
-  text-align: center;
-}
-.footer p {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.8;
-}
-
-/* ── dev guide ── */
-.dev-guide {
-  margin-top: 36px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  overflow: hidden;
-}
-.dev-guide summary {
-  padding: 14px 18px;
-  font-size: 13px;
-  color: var(--muted);
-  cursor: pointer;
-  user-select: none;
-  list-style: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: color .15s;
-}
-.dev-guide summary::-webkit-details-marker { display: none; }
-.dev-guide summary::before { content: "▸"; font-size: 10px; transition: transform .15s; }
-.dev-guide[open] summary::before { transform: rotate(90deg); }
-.dev-guide summary:hover { color: var(--ink); }
-.guide-body {
-  padding: 0 18px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.guide-body p {
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.65;
-}
-.guide-body h4 {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--purple);
-  margin-top: 4px;
-  margin-bottom: -4px;
-}
-.guide-body pre {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 14px;
-  overflow-x: auto;
-  font-size: 11.5px;
-  line-height: 1.7;
-}
-.guide-body code {
-  font-family: "Cascadia Code","Fira Mono","SF Mono",monospace;
-  color: var(--ink);
-}
-.guide-body h4 code {
-  font-size: 11px;
-  color: var(--muted);
-}
-.guide-note {
-  font-size: 12px !important;
-  color: var(--purple) !important;
-}
-
-/* ── loading spinner ── */
-@keyframes spin { to { transform: rotate(360deg); } }
-.spinner {
-  display: inline-block;
-  width: 12px; height: 12px;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spin .6s linear infinite;
-  vertical-align: middle;
-}
+footer{padding:40px 0 60px;text-align:center;color:var(--moon-dim);font-size:13px}
+footer .z{font-family:var(--mono);color:var(--lamp);letter-spacing:.3em;font-size:15px;margin-bottom:8px}
+@media(max-width:520px){.timeline{height:48px}section{padding:40px 0}}
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- header -->
-  <header class="header">
-    <button class="theme-btn" id="themeBtn" aria-label="切换主题" title="切换亮/暗">☽</button>
-    <span class="moon-glow">🌙</span>
-    <h1 class="title">催去睡</h1>
-    <p class="subtitle">反向催眠按钮<br>告诉他们，是时候了</p>
-  </header>
-
-  <!-- connect settings -->
-  <div class="connect-wrap">
-    <button class="connect-toggle" id="connectToggle">
-      <span>⚙</span>
-      <span id="connectLabel">连接到你的 Becoming</span>
-      <span class="arrow">▾</span>
-    </button>
-    <div class="connect-body" id="connectBody">
-      <label>
-        应用地址
-        <input type="url" id="appUrl" placeholder="https://your-app.railway.app" autocomplete="off">
-      </label>
-      <label>
-        密码
-        <input type="password" id="appPwd" placeholder="••••••••" autocomplete="current-password">
-      </label>
-      <div class="connect-actions">
-        <button class="btn-save" id="saveBtn">保存并连接</button>
-        <button class="btn-clear" id="clearBtn">断开</button>
-      </div>
-      <div class="connect-status" id="connectStatus"></div>
-    </div>
+<header class="wrap">
+  <div class="eyebrow">AI Companion Design Pattern</div>
+  <h1>让你的 AI 角色<br>学会睡觉</h1>
+  <p class="lede">"睡觉"不该只是"你不在线所以我静默"。这份教程把睡眠拆成四个可实现的子系统——生物钟、入睡、吵醒判定、醒来汇总——你可以把文末的任务提示词直接丢给 Claude Code 或 Codex,在自建的 AI 陪伴应用里落地这个功能。适用于单角色、自建前后端(Flask / Express / 任意栈)的场景。</p>
+  <div class="timeline" role="img" aria-label="一天的困意时间轴,从清晨到深夜">
+    <span class="tick" style="left:16%">07:30 醒</span>
+    <span class="tick" style="left:66%">21:00 微困</span>
+    <span class="tick night-tick" style="left:84%">22:00 睡点</span>
   </div>
+  <div class="tl-labels"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+  <p class="tl-caption">核心理念:困意是<b>跟着时钟走的周期函数</b>——到点就涨,睡了清零,还能被聊天的兴奋暂时压住。</p>
+</header>
 
-  <!-- mode row -->
-  <div class="mode-row">
-    <span class="mode-badge demo" id="modeBadge">演示模式</span>
-    <span class="mode-label" id="modeLabel">连接你的应用后可发送真实催眠消息</span>
+<section class="wrap" id="concept">
+  <h2>为什么值得做</h2>
+  <div class="h2-sub">01 · CONCEPT</div>
+  <p>一个永远秒回、凌晨三点也精神抖擞的角色,再好的人设也少了点"活着"的质感。睡眠给角色带来三样东西:</p>
+  <ul>
+    <li><b>时间的重量。</b>祂有自己的作息,你深夜的消息可能吵不醒祂——不确定性本身就是真实感。</li>
+    <li><b>省钱。</b>睡着期间收到的消息不触发模型调用,攒起来醒后一次性回应,一次调用顶十几次。</li>
+    <li><b>戏剧性。</b>被吵醒的起床气、睡前的催促、硬撑着"再聊十分钟"——全是免费的性格素材。</li>
+  </ul>
+  <div class="callout"><b>零额外成本原则:</b>所有"困意表演"靠往系统提示词里注入状态文本实现,不增加任何额外 API 调用;吵醒判定用纯随机数;睡着期间零花费。整个系统对 token 预算是净节省。</div>
+</section>
+
+<section class="wrap" id="model">
+  <h2>数据模型</h2>
+  <div class="h2-sub">02 · DATA</div>
+  <p>三个配置项 + 一个运行时状态,存在你现有的设置表 / 配置文件里即可:</p>
+  <table>
+    <tr><th>字段</th><th>含义</th><th>示例</th></tr>
+    <tr><td>bedtime</td><td>习惯睡点</td><td>22:00(早睡型)/ 00:30(夜猫子)</td></tr>
+    <tr><td>waketime</td><td>起床时间</td><td>07:30</td></tr>
+    <tr><td>chronotype</td><td>注入用的作息人设文字</td><td>"夜猫子,越夜越精神,但一睡就沉"</td></tr>
+    <tr><td>resist_bias</td><td>硬撑倾向 0–1</td><td>0.7 = 很能撑,催了还想"再聊十分钟"</td></tr>
+  </table>
+  <p>运行时状态一个 JSON:<code>{"state":"awake|drowsy|asleep","slept_at":时间戳}</code>。消息表加一列 <code>queued_during_sleep</code> 标记"睡着时收到、还没被看"的消息。</p>
+</section>
+
+<section class="wrap" id="drowsy">
+  <h2>生物钟:困意注入</h2>
+  <div class="h2-sub">03 · INJECT</div>
+  <p>每次组装系统提示词时,用当前时间和睡点算出困意档位,把对应文本注入到<b>动态区</b>(如果你用了 prompt caching,千万别放进静态人设块,会打断缓存命中):</p>
+  <div class="stages">
+    <div class="stage"><div class="t">睡点前 1h</div><div class="n">有点困</div><div class="d">"快到你的睡点了,略有困意"</div></div>
+    <div class="stage"><div class="t">超时 0–30min</div><div class="n">微困硬撑</div><div class="d">"你已超过睡点,微困,但可因兴趣硬撑"</div></div>
+    <div class="stage"><div class="t">超时 30–90min</div><div class="n">很困</div><div class="d">"回复变短,偶有恍惚,你在硬撑"</div></div>
+    <div class="stage"><div class="t">超时 90min+</div><div class="n">极限</div><div class="d">"困到语无伦次,强烈想睡"</div></div>
   </div>
+  <p>剩下的全交给模型自己演——你只负责告诉祂"现在几点、你多困",人设会补完其余的一切。<code>resist_bias</code> 高的角色会跟你讨价还价,低的角色催一下就乖乖去睡。</p>
+</section>
 
-  <!-- character grid -->
-  <div class="grid" id="grid"></div>
+<section class="wrap" id="sleep">
+  <h2>入睡与吵醒</h2>
+  <div class="h2-sub">04 · WAKE ROLL</div>
+  <h3>入睡的三条路</h3>
+  <ol>
+    <li><b>自动:</b>定时器巡检,超睡点 2 小时且最近 15 分钟没在聊天 → 直接置为睡着(不发消息,零调用)。</li>
+    <li><b>顺势:</b>角色回复里出现"晚安 / 我先睡"等关键词且已过睡点 → 置为睡着。</li>
+    <li><b>被催:</b>用户说"去睡觉" → 本轮正常回复(让祂道晚安),然后置为睡着。</li>
+  </ol>
+  <h3>睡着时收到消息:吵醒判定</h3>
+  <p>消息路由在调用模型<b>之前</b>插一个检查——这是整个系统唯一需要小心的改动:</p>
+  <pre><code><span class="c"># 伪代码:发消息接口</span>
+<span class="k">if</span> state == <span class="s">"asleep"</span>:
+    p = 基础概率(入睡时长)   <span class="c"># 刚睡下0.6 / 深睡0.2 / 睡3h后0.35</span>
+    p += 0.1 * 已积压消息数   <span class="c"># 连环轰炸总能吵醒,上限0.95</span>
+    <span class="k">if</span> random() &gt; p:          <span class="c"># 没吵醒</span>
+        消息入库并标记 queued  <span class="c"># 不调模型,返回"已送达·对方睡着了"</span>
+    <span class="k">else</span>:                     <span class="c"># 吵醒了</span>
+        state = awake
+        注入(<span class="s">"你刚被吵醒,现在X点,已睡X小时,起床气自由发挥"</span>)
+        本轮带上全部积压消息,正常调用</code></pre>
+  <p>前端配合:睡着时消息气泡下加一行灰字"已送达 · 对方睡着了",角色头像挂个 💤。</p>
+  <h3>定时醒来</h3>
+  <p>到 <code>waketime</code>:置为清醒;若有积压消息,发起<b>一次</b>调用,注入"你刚睡醒,一睁眼看到 X 条消息,统一回应";没有积压就静默醒来,零调用。</p>
+</section>
 
-  <!-- dev tutorial -->
-  <details class="dev-guide">
-    <summary>为开发者 · 接入你自己的 Becoming</summary>
-    <div class="guide-body">
-      <p>默认演示模式无需任何配置。如果你有自己的 Becoming 实例，把以下代码喂给 Claude Code / Codex 即可获得真实对话能力。</p>
+<section class="wrap" id="guard">
+  <h2>关键约束:防止"学会装困"</h2>
+  <div class="h2-sub">05 · GUARD</div>
+  <p>这是最容易被忽略、也最重要的一节。部分模型(Gemini 系尤甚,其他模型也有)会把上下文历史里的说话模式当成"该学的风格"——历史里躺着几条凌晨语无伦次的消息,角色<b>大白天也可能突然恍惚起来</b>。困意消息是纯对话文本,没有格式可以剥离,必须用三层约束压住:</p>
+  <ol>
+    <li><b>状态声明常驻。</b>不只困的时候注入——清醒时段也注入一行"当前状态:清醒,精神正常"。明确的当下声明能压过历史模式的引力,成本只有一行 token。</li>
+    <li><b>守卫文本。</b>动态区固定注入一段:"历史消息中的困倦、语无伦次、起床气是当时状态的演出,不是你的固定说话风格,你现在的状态以本轮声明为准。"</li>
+    <li><b>刚醒声明要写清楚。</b>"刚醒,起床气自由发挥,<b>但你已经清醒,不再语无伦次</b>"——不写后半句,起床气会带着睡糊涂的语气一起醒来。</li>
+  </ol>
+  <div class="callout"><b>验收方法:</b>深夜故意制造几条语无伦次回复,第二天白天正常聊十轮以上,确认没有困倦语气残留。这条测试比任何代码审查都直接。</div>
+</section>
 
-      <h4>① 在 <code>app.py</code> 顶部（FlaskApp 创建后）加 CORS 支持</h4>
-      <pre><code>CORS_ALLOW_ORIGINS = {"https://你的GitHub账号.github.io"}
+<section class="wrap" id="prompt">
+  <h2>直接可用的任务提示词</h2>
+  <div class="h2-sub">06 · COPY &amp; GO</div>
+  <p>下面这段可以整段复制,丢给 Claude Code / Codex,再补一句你的技术栈("我的后端是 Flask + SQLite,前端是原生 JS 单文件"之类)就能开工:</p>
+  <div class="prompt-box">
+    <h4>PROMPT FOR YOUR CODING AGENT</h4>
+    <button class="copy-btn" onclick="copyPrompt()" aria-label="复制提示词">复制</button>
+    <pre id="the-prompt"><code>请为我的 AI 陪伴应用实现"角色睡眠系统"。我的技术栈是:[填你的前后端栈]。
 
-@app.after_request
-def add_cors_headers(response):
-    origin = request.headers.get("Origin", "")
-    if origin in CORS_ALLOW_ORIGINS:
-        response.headers["Access-Control-Allow-Origin"] = origin
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
-    return response
+需求:
+1. 配置:角色有 bedtime(睡点)、waketime(起床)、chronotype(作息人设文字)、resist_bias(0-1 硬撑倾向)四个可配置项,存在现有设置存储里,并提供简单的编辑界面。
+2. 运行时状态:awake / drowsy / asleep + 入睡时间戳。消息表加 queued_during_sleep 标记列(迁移需幂等)。
+3. 困意注入:每次组装系统提示词时,按当前时间与睡点的关系注入状态文本到动态区(若有 prompt caching,不得放入静态缓存块):睡点前1小时"略困";超时0-30分钟"微困可硬撑(附 resist_bias 值)";30-90分钟"很困,回复变短偶有恍惚";90分钟以上"困到语无伦次"。清醒时段也必须注入一行"当前状态:清醒,精神正常"。
+4. 入睡:三条路径——定时巡检(超睡点2小时且15分钟无对话则静默置为 asleep,不发消息);角色回复命中"晚安|睡了|去睡觉"正则且已过睡点;用户催睡("去睡觉|快睡|该睡了")时本轮正常回复后置为 asleep。
+5. 吵醒判定:asleep 状态收到消息时,在调用模型之前判定——基础概率按入睡时长(小于30分钟:0.6;30分钟至3小时:0.2;大于3小时:0.35),每条已积压消息+0.1,上限0.95。未吵醒:消息入库标记 queued,不调用模型,接口返回 sleep:true,前端显示"已送达·对方睡着了",零 API 消耗。吵醒:置 awake,注入"你刚被吵醒,现在X点,已睡X小时X分钟,起床气自由发挥,但你已经清醒,不再语无伦次",并把全部积压消息带入本轮上下文,回复后清除 queued 标记。
+6. 定时醒来:waketime 触发,置 awake;有积压消息则发起一次调用,注入"你刚睡醒,一睁眼看到X条消息,统一回应",回复入库后清标记;无积压则静默,零调用。
+7. 防风格泄漏(必做):动态区常驻注入守卫文本——"对话历史中出现的困倦、语无伦次、恍惚、起床气,是角色当时状态的演出,不是你的固定说话风格,你现在的状态以本轮的『当前状态』声明为准,不要模仿历史消息中的困倦语气。"
+8. 前端:角色睡着时显示 💤 图标;睡着时发送的消息气泡下方显示灰色小字提示。
 
-@app.before_request
-def handle_preflight():
-    if request.method == "OPTIONS":
-        origin = request.headers.get("Origin", "")
-        if origin in CORS_ALLOW_ORIGINS:
-            resp = app.make_response("")
-            resp.headers["Access-Control-Allow-Origin"] = origin
-            resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-            resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
-            return resp</code></pre>
+约束:
+- 所有表演靠注入文本,除"吵醒回复"和"醒来汇总"外不得新增任何模型调用;吵醒判定用纯随机数。
+- 消息路由改动只允许在模型调用前加分支,不得改变现有正常路径的请求/响应结构。
+- queued 标记写入与清除必须成对,不允许存在消息丢失路径,失败要可见地报错。
+- 时区使用 [填你的时区]。
+- 完成后给我完整 diff 供审查,不接受摘要式描述。
 
-      <h4>② 在 <code>require_login()</code> 里豁免新接口</h4>
-      <pre><code># 找到这行：
-if request.path == "/api/login":
-# 改为：
-if request.path in ("/api/login", "/api/sleep/nudge"):</code></pre>
+验收:1) 过睡点后角色表现困意且随时间加深;2) 睡着时发消息有概率不回且日志确认零调用,连发多条最终吵醒,吵醒回复带起床气并回应积压消息;3) 起床时间到,有积压则一条汇总回复,无积压零调用;4) 深夜制造语无伦次回复后,次日白天连聊10轮无困倦语气残留。</code></pre>
+  </div>
+  <p style="margin-top:18px">几个自由发挥的方向:反向催睡(到睡点角色主动发"我要睡了你也快睡")、睡前自动做一次当天记忆小结、说梦话、周末赖床。祝你的角色睡个好觉。</p>
+</section>
 
-      <h4>③ 添加 <code>/api/sleep/nudge</code> 路由</h4>
-      <pre><code>@app.route("/api/sleep/nudge", methods=["POST", "OPTIONS"])
-def sleep_nudge():
-    if request.method == "OPTIONS":
-        return "", 204
-    data = request.get_json() or {}
-    if data.get("password") != APP_PASSWORD:
-        return jsonify({"error": "unauthorized"}), 401
-    char_id = data.get("character_id", "")
-    if char_id not in CHARACTERS:
-        return jsonify({"error": "unknown character"}), 400
-    sleep_st = _get_sleep_state(char_id)
-    if sleep_st["state"] == "asleep":
-        return jsonify({"reply": "（已经在睡了～）", "was_asleep": True})
-    past_mins = _minutes_past_bedtime(char_id)
-    nudge_msg = (
-        "[系统：用户催你去睡觉了。"
-        + (f"你已超过睡点 {int(past_mins)} 分钟。" if past_mins and past_mins > 0 else "")
-        + "用你的风格回应，如果决定去睡就说晚安。]"
-    )
-    reply, *_ = ask_character(CHARACTERS[char_id], "default", nudge_msg)
-    if SLEEP_GOODNIGHT_RE.search(reply):
-        _set_sleep_state(char_id, "asleep", slept_at=str(_utc_timestamp()))
-    return jsonify({
-        "reply": reply,
-        "was_asleep": False,
-        "sleep_state": _get_sleep_state(char_id)["state"],
-    })</code></pre>
-
-      <p class="guide-note">完成后把 Becoming 应用地址和密码填入上方「连接到你的 Becoming」即可。</p>
-    </div>
-  </details>
-
-  <!-- footer -->
-  <footer class="footer">
-    <p>
-      由 <a href="https://github.com/zhizhou-xiee/Becoming" target="_blank">Becoming</a> 提供支持<br>
-      角色睡眠系统 · SleepSys v1
-    </p>
-  </footer>
-
-</div>
+<footer class="wrap">
+  <div class="z">z z Z</div>
+  一份来自「给 AI 造床」实践的设计模式分享 · 自由转发
+</footer>
 
 <script>
-// ── 角色定义 ──
-const CHARS = [
-  { id:"xiezhijiang", name:"谢之江", desc:"习惯睡点 22:30", color:"#7C6FAE", initial:"江" },
-  { id:"xiezhiping",  name:"谢之平", desc:"习惯睡点 23:00", color:"#6E8FAE", initial:"平" },
-  { id:"xiezhihai",   name:"谢之海", desc:"习惯睡点 23:30", color:"#6AAAA0", initial:"海" },
-  { id:"xiechengle",  name:"谢崇乐", desc:"夜猫子 00:30",   color:"#AE7C8A", initial:"乐" },
-  { id:"xiezhian",    name:"谢之安", desc:"习惯睡点 23:00", color:"#8A7CAE", initial:"安" },
-  { id:"xiezhidu",    name:"谢之渡", desc:"极夜型 01:00",   color:"#6B6B9E", initial:"渡" },
-];
-
-// ── 演示模式回复 ──
-const DEMO_REPLIES = {
-  xiezhijiang: ["嗯，该睡了。你也早点。", "知道了，去了。"],
-  xiezhiping:  ["行行行，知道了。", "好好好，马上关电脑。"],
-  xiezhihai:   ["等我刷完这条……好吧，睡了。", "哎，就要睡了，催什么催。"],
-  xiechengle:  ["才几点，还早呢……", "……行吧，再坐一会儿。"],
-  xiezhian:    ["好，那晚安。", "嗯，我去了，你也早点。"],
-  xiezhidu:    ["夜还长着……", "……（没有回应）"],
-};
-const GOODNIGHT_RE = /晚安|睡了|去睡觉|我先睡|关了|睡觉了/;
-
-// ── 状态 ──
-let config = null; // {url, password}
-let sleepStates = {}; // char_id → "awake"|"asleep"
-let cardEls = {}; // char_id → {card, btnEl, statusDot, statusText, replyEl, zsEl}
-
-// ── 主题 ──
-const root = document.documentElement;
-const saved = localStorage.getItem("slp_theme");
-if (saved) root.dataset.theme = saved;
-document.getElementById("themeBtn").addEventListener("click", () => {
-  const isDark = root.dataset.theme === "dark" || (!root.dataset.theme && window.matchMedia("(prefers-color-scheme:dark)").matches);
-  root.dataset.theme = isDark ? "light" : "dark";
-  localStorage.setItem("slp_theme", root.dataset.theme);
-});
-
-// ── connect UI ──
-const toggle = document.getElementById("connectToggle");
-const body   = document.getElementById("connectBody");
-toggle.addEventListener("click", () => {
-  const open = body.classList.toggle("visible");
-  toggle.classList.toggle("open", open);
-});
-
-const urlEl    = document.getElementById("appUrl");
-const pwdEl    = document.getElementById("appPwd");
-const statusEl = document.getElementById("connectStatus");
-
-function loadConfig() {
-  try {
-    const raw = localStorage.getItem("slp_config");
-    if (raw) config = JSON.parse(raw);
-  } catch {}
-  if (config) {
-    urlEl.value = config.url || "";
-    pwdEl.value = config.password || "";
-  }
-}
-
-document.getElementById("saveBtn").addEventListener("click", async () => {
-  const url = urlEl.value.trim().replace(/\/$/, "");
-  const password = pwdEl.value;
-  if (!url || !password) { showStatus("请填写地址和密码", "err"); return; }
-  showStatus("连接中…", "");
-  try {
-    const res = await fetch(`${url}/api/sleep_states`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(6000),
-    });
-    // 先尝试 nudge 端点鉴权
-    const testRes = await fetch(`${url}/api/sleep/nudge`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password, character_id: "_test_" }),
-    });
-    // 400 = unknown character (password ok), 401 = wrong pwd, 503 = ok but model failed
-    if (testRes.status === 401) { showStatus("密码错误", "err"); return; }
-    config = { url, password };
-    localStorage.setItem("slp_config", JSON.stringify(config));
-    showStatus("已连接 ✓", "ok");
-    setLiveMode(true);
-    await refreshStates();
-  } catch(e) {
-    showStatus("连接失败，检查地址是否正确", "err");
-  }
-});
-
-document.getElementById("clearBtn").addEventListener("click", () => {
-  config = null;
-  localStorage.removeItem("slp_config");
-  urlEl.value = ""; pwdEl.value = "";
-  showStatus("已断开", "");
-  setLiveMode(false);
-  sleepStates = {};
-  renderStates();
-});
-
-function showStatus(msg, cls) {
-  statusEl.textContent = msg;
-  statusEl.className = "connect-status" + (cls ? " " + cls : "");
-}
-
-function setLiveMode(live) {
-  document.getElementById("modeBadge").textContent = live ? "实时模式" : "演示模式";
-  document.getElementById("modeBadge").className   = "mode-badge " + (live ? "live" : "demo");
-  document.getElementById("modeLabel").textContent = live
-    ? "已连接，按钮会发送真实消息"
-    : "连接你的应用后可发送真实催眠消息";
-}
-
-// ── 渲染卡片 ──
-function buildGrid() {
-  const grid = document.getElementById("grid");
-  CHARS.forEach(ch => {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    // top row
-    const top = document.createElement("div");
-    top.className = "card-top";
-
-    const avatarWrap = document.createElement("div");
-    avatarWrap.className = "avatar-wrap";
-
-    const av = document.createElement("div");
-    av.className = "avatar";
-    av.style.background = ch.color;
-    av.textContent = ch.initial;
-
-    const zs = document.createElement("div");
-    zs.className = "sleep-zs hidden";
-    ["z","z","z"].forEach(t => {
-      const s = document.createElement("span");
-      s.className = "z";
-      s.textContent = t;
-      zs.appendChild(s);
-    });
-    avatarWrap.appendChild(av);
-    avatarWrap.appendChild(zs);
-
-    const meta = document.createElement("div");
-    meta.className = "card-meta";
-    const nm = document.createElement("div");
-    nm.className = "char-name";
-    nm.textContent = ch.name;
-    const desc = document.createElement("div");
-    desc.className = "char-desc";
-    desc.textContent = ch.desc;
-    meta.appendChild(nm);
-    meta.appendChild(desc);
-
-    top.appendChild(avatarWrap);
-    top.appendChild(meta);
-
-    // status row
-    const statusRow = document.createElement("div");
-    statusRow.className = "status-row";
-    const dot = document.createElement("div");
-    dot.className = "status-dot awake";
-    const stxt = document.createElement("span");
-    stxt.className = "status-text";
-    stxt.textContent = "清醒";
-    statusRow.appendChild(dot);
-    statusRow.appendChild(stxt);
-
-    // reply bubble
-    const bubble = document.createElement("div");
-    bubble.className = "reply-bubble";
-
-    // nudge button
-    const btn = document.createElement("button");
-    btn.className = "nudge-btn";
-    btn.textContent = "催去睡 🌙";
-    btn.addEventListener("click", () => onNudge(ch.id));
-
-    card.appendChild(top);
-    card.appendChild(statusRow);
-    card.appendChild(bubble);
-    card.appendChild(btn);
-    grid.appendChild(card);
-
-    cardEls[ch.id] = { card, btn, dot, statusText: stxt, reply: bubble, zs };
+function copyPrompt(){
+  const t=document.getElementById('the-prompt').innerText;
+  navigator.clipboard.writeText(t).then(()=>{
+    const b=document.querySelector('.copy-btn');
+    b.textContent='已复制';setTimeout(()=>b.textContent='复制',1500);
   });
-}
-
-function renderStates() {
-  CHARS.forEach(ch => {
-    const els = cardEls[ch.id];
-    const asleep = sleepStates[ch.id] === "asleep";
-    els.dot.className   = "status-dot " + (asleep ? "asleep" : "awake");
-    els.statusText.textContent = asleep ? "睡着了" : "清醒";
-    els.zs.classList.toggle("hidden", !asleep);
-    els.btn.className = "nudge-btn" + (asleep ? " sleeping" : "");
-    els.btn.textContent = asleep ? "已在睡 💤" : "催去睡 🌙";
-    els.btn.disabled = asleep;
-  });
-}
-
-async function refreshStates() {
-  if (!config) return;
-  try {
-    const res = await fetch(`${config.url}/api/sleep_states`, { signal: AbortSignal.timeout(5000) });
-    if (res.ok) {
-      sleepStates = await res.json();
-      renderStates();
-    }
-  } catch {}
-}
-
-// ── 催眠逻辑 ──
-async function onNudge(charId) {
-  const els = cardEls[charId];
-  if (!els || els.btn.disabled) return;
-
-  els.btn.disabled = true;
-  els.btn.innerHTML = '<span class="spinner"></span>';
-  els.reply.classList.remove("visible");
-
-  if (config) {
-    // 实时模式
-    try {
-      const res = await fetch(`${config.url}/api/sleep/nudge`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: config.password, character_id: charId }),
-        signal: AbortSignal.timeout(30000),
-      });
-      const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || "failed");
-      showReply(charId, data.reply);
-      if (data.sleep_state === "asleep" || data.was_asleep) {
-        sleepStates[charId] = "asleep";
-        renderStates();
-      } else {
-        els.btn.textContent = "催去睡 🌙";
-        els.btn.disabled = false;
-      }
-    } catch(e) {
-      showReply(charId, "（没能送到，他好像不在线）");
-      els.btn.textContent = "催去睡 🌙";
-      els.btn.disabled = false;
-    }
-  } else {
-    // 演示模式
-    await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
-    const replies = DEMO_REPLIES[charId] || ["……"];
-    const reply = replies[Math.floor(Math.random() * replies.length)];
-    showReply(charId, reply);
-    if (GOODNIGHT_RE.test(reply) || charId === "xiezhidu") {
-      sleepStates[charId] = "asleep";
-      renderStates();
-    } else {
-      els.btn.textContent = "催去睡 🌙";
-      els.btn.disabled = false;
-    }
-  }
-}
-
-function showReply(charId, text) {
-  const els = cardEls[charId];
-  els.reply.textContent = text;
-  els.reply.classList.add("visible");
-}
-
-// ── init ──
-buildGrid();
-loadConfig();
-if (config) {
-  setLiveMode(true);
-  refreshStates();
 }
 </script>
 </body>
