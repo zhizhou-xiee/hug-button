@@ -73,7 +73,17 @@ td:first-child{font-family:var(--mono);font-size:13px;color:var(--dawn);white-sp
 .copy-btn:focus-visible{outline:2px solid var(--moon);outline-offset:2px}
 
 footer{padding:40px 0 60px;text-align:center;color:var(--moon-dim);font-size:13px}
-footer .z{font-family:var(--mono);color:var(--lamp);letter-spacing:.3em;font-size:15px;margin-bottom:8px}
+footer .z{font-family:var(--mono);letter-spacing:.3em;font-size:15px;margin-bottom:16px;display:flex;justify-content:center;align-items:flex-end;height:40px;gap:2px}
+footer .z span{color:var(--lamp);opacity:0;display:inline-block;animation:z-rise 2.8s ease-in-out infinite}
+footer .z span:nth-child(1){font-size:12px;animation-delay:0s}
+footer .z span:nth-child(2){font-size:16px;animation-delay:.9s}
+footer .z span:nth-child(3){font-size:21px;animation-delay:1.8s}
+@keyframes z-rise{
+  0%  {opacity:0;transform:translate(0,0) rotate(-10deg) scale(.7)}
+  15% {opacity:.9}
+  70% {opacity:.6}
+  100%{opacity:0;transform:translate(6px,-28px) rotate(10deg) scale(1.2)}
+}
 @media(max-width:520px){.timeline{height:48px}section{padding:40px 0}}
 </style>
 </head>
@@ -201,7 +211,7 @@ footer .z{font-family:var(--mono);color:var(--lamp);letter-spacing:.3em;font-siz
 </section>
 
 <footer class="wrap">
-  <div class="z">z z Z</div>
+  <div class="z"><span>z</span><span>z</span><span>Z</span></div>
   <p style="margin-bottom:18px">一份来自「给 AI 造床」实践的设计模式分享 · 自由转发</p>
   <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;
      background:rgba(242,178,99,.1);border:1px solid rgba(242,178,99,.25);
