@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>心声 · 藏在消息里的另一句话</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg:        #FAF3F6;
+    --card:      #F1E1E9;
+    --ink:       #4B2E42;
+    --muted:     rgba(120, 80, 105, 0.62);
+    --violet:    #9B5F91;
+    --violet-deep: #7C4876;
+    --line:      rgba(120, 80, 105, 0.18);
+    --code-bg:   #2A1E28;
+    --code-ink:  #F1E1EA;
+    --code-comment: #9C7C93;
+    --code-accent:  #E3A9D6;
+    --pill-bg:   rgba(155, 95, 145, 0.12);
+    --whisper:   #CBA0C4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:        #1D141B;
+      --card:      #271C25;
+      --ink:       #F1E1E9;
+      --muted:     rgba(220, 190, 210, 0.55);
+      --violet:    #CE93C4;
+      --violet-deep: #A472A0;
+      --line:      rgba(220, 190, 210, 0.16);
+      --code-bg:   #150F14;
+      --code-ink:  #EBDCE6;
+      --code-comment: #8E6F87;
+      --code-accent:  #E6B8DE;
+      --pill-bg:   rgba(203, 147, 196, 0.14);
+      --whisper:   #B187AA;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg:        #FAF3F6;
+    --card:      #F1E1E9;
+    --ink:       #4B2E42;
+    --muted:     rgba(120, 80, 105, 0.62);
+    --violet:    #9B5F91;
+    --violet-deep: #7C4876;
+    --line:      rgba(120, 80, 105, 0.18);
+    --code-bg:   #2A1E28;
+    --code-ink:  #F1E1EA;
+    --code-comment: #9C7C93;
+    --code-accent:  #E3A9D6;
+    --pill-bg:   rgba(155, 95, 145, 0.12);
+    --whisper:   #CBA0C4;
+  }
+  :root[data-theme="dark"] {
+    --bg:        #1D141B;
+    --card:      #271C25;
+    --ink:       #F1E1E9;
+    --muted:     rgba(220, 190, 210, 0.55);
+    --violet:    #CE93C4;
+    --violet-deep: #A472A0;
+    --line:      rgba(220, 190, 210, 0.16);
+    --code-bg:   #150F14;
+    --code-ink:  #EBDCE6;
+    --code-comment: #8E6F87;
+    --code-accent:  #E6B8DE;
+    --pill-bg:   rgba(203, 147, 196, 0.14);
+    --whisper:   #B187AA;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.2s, color 0.2s;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 22px 96px; }
+
+  .theme-toggle {
+    position: fixed; top: 20px; right: 20px;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 999px; padding: 6px 14px; font-size: 12px;
+    color: var(--muted); cursor: pointer; font-family: inherit;
+    transition: all 0.15s; z-index: 100;
+  }
+  .theme-toggle:hover { border-color: var(--violet); color: var(--violet); }
+
+  /* ── hero ── */
+  .hero { text-align: center; padding: 72px 0 20px; }
+  .eyebrow {
+    font-size: 12px; letter-spacing: 0.28em; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 18px;
+  }
+  h1 {
+    font-size: clamp(34px, 7vw, 46px); font-weight: 700;
+    letter-spacing: 0.06em; text-wrap: balance; margin-bottom: 10px;
+  }
+  .hero p.lede { color: var(--muted); font-size: 15px; max-width: 32em; margin: 0 auto; }
+
+  /* ── demo ── */
+  .demo-stage {
+    background: var(--card); border-radius: 28px;
+    margin: 34px 0 8px; padding: 22px 20px 24px;
+    border: 1px solid var(--line);
+  }
+  .demo-label {
+    font-size: 12px; letter-spacing: 0.12em; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 14px; text-align: center;
+  }
+  .demo-chat {
+    display: flex; flex-direction: column; gap: 14px;
+    min-height: 92px; margin-bottom: 18px;
+  }
+  .demo-msg { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; max-width: 82%; margin-left: auto; }
+  .demo-msg.ai { align-items: flex-start; margin-left: 0; margin-right: auto; }
+  .demo-avatar-row { display: flex; align-items: center; gap: 8px; }
+  .demo-msg.ai .demo-avatar-row { flex-direction: row; }
+  .demo-avatar {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; background: var(--violet); color: #fff;
+  }
+  .demo-msg.ai .demo-avatar { background: var(--muted); }
+  .fold {
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; gap: 6px;
+    color: var(--whisper); opacity: 0.75; font-size: 12px;
+    padding: 3px 4px; user-select: none;
+  }
+  .fold .chev { margin-left: 2px; transition: transform 0.2s ease; font-size: 12px; }
+  .fold.open .chev { transform: rotate(90deg); }
+  .fold-body {
+    display: none; font-size: 12.5px; color: var(--muted);
+    background: color-mix(in srgb, var(--whisper) 14%, var(--card));
+    border-right: 2px solid color-mix(in srgb, var(--whisper) 55%, transparent);
+    border-radius: 8px 0 0 8px; padding: 8px 12px; text-align: right;
+    max-width: 240px; line-height: 1.6;
+  }
+  .demo-msg.ai .fold-body { text-align: left; border-right: none; border-left: 2px solid color-mix(in srgb, var(--muted) 55%, transparent); border-radius: 0 8px 8px 0; }
+  .fold.open + .fold-body { display: block; }
+  .demo-bubble {
+    padding: 10px 15px; border-radius: 18px; font-size: 14.5px;
+    background: var(--violet); color: #fff; border-bottom-right-radius: 5px;
+    max-width: 100%; word-break: break-word;
+  }
+  .demo-msg.ai .demo-bubble { background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-bottom-left-radius: 5px; border-bottom-right-radius: 18px; }
+  .demo-bubble.silent { opacity: 0.55; font-style: italic; }
+
+  .demo-composer { display: flex; flex-direction: column; gap: 8px; }
+  .demo-composer textarea {
+    width: 100%; font-family: inherit; font-size: 14px; resize: none;
+    border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px;
+    background: var(--bg); color: var(--ink); outline: none;
+  }
+  .demo-composer textarea:focus { border-color: var(--violet); }
+  .demo-composer-row { display: flex; gap: 8px; }
+  .demo-send {
+    background: var(--violet); color: #fff; border: none; cursor: pointer;
+    font-family: inherit; font-size: 13.5px; font-weight: 600;
+    padding: 9px 20px; border-radius: 999px; flex-shrink: 0;
+    align-self: flex-end; transition: transform 0.1s;
+  }
+  .demo-send:active { transform: scale(0.95); }
+  .demo-hint { font-size: 11.5px; color: var(--muted); text-align: center; margin-top: 2px; }
+
+  /* ── 正文结构 ── */
+  section { margin-top: 60px; }
+  .sec-label {
+    font-size: 12px; letter-spacing: 0.24em; color: var(--violet);
+    margin-bottom: 8px; font-weight: 600;
+  }
+  h2 { font-size: 24px; font-weight: 700; margin-bottom: 16px; text-wrap: balance; }
+  h3 { font-size: 17px; font-weight: 700; margin: 34px 0 10px; }
+  p { margin-bottom: 14px; }
+  .soft { color: var(--muted); font-size: 14px; }
+  strong { font-weight: 700; }
+  em { font-style: normal; color: var(--violet); }
+
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+  @media (max-width: 560px) { .duo { grid-template-columns: 1fr; } }
+  .dir-card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 20px; padding: 20px 20px 16px;
+  }
+  .dir-card .tag {
+    display: inline-block; background: var(--pill-bg); color: var(--violet);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+    padding: 3px 12px; border-radius: 999px; margin-bottom: 10px;
+  }
+  .dir-card p { font-size: 14px; margin-bottom: 6px; }
+
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 16px 0 4px; }
+  .flow-step { display: flex; gap: 12px; align-items: baseline; font-size: 14px; padding: 7px 0; }
+  .flow-step + .flow-step { border-top: 1px dashed var(--line); }
+  .flow-step .n { color: var(--violet); font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+  pre {
+    background: var(--code-bg); color: var(--code-ink);
+    border-radius: 16px; padding: 18px 20px;
+    overflow-x: auto; font-size: 13px; line-height: 1.7;
+    margin: 14px 0 22px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.9em; background: var(--pill-bg); padding: 1px 6px; border-radius: 6px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  pre .c { color: var(--code-comment); }
+  pre .k { color: var(--code-accent); }
+
+  ul.check { list-style: none; margin: 12px 0 8px; }
+  ul.check li { padding: 7px 0 7px 32px; position: relative; font-size: 15px; }
+  ul.check li::before { content: "💭"; position: absolute; left: 2px; font-size: 13px; }
+
+  .pit {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 18px; padding: 18px 20px 12px; margin-bottom: 14px;
+  }
+  .pit h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .pit p { font-size: 14px; margin-bottom: 8px; }
+
+  .copy-bar {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 18px; padding: 16px 20px; margin: 22px 0 6px;
+  }
+  .copy-bar p { margin: 0; font-size: 14px; color: var(--muted); flex: 1; min-width: 200px; }
+  .copy-btn {
+    background: var(--violet); color: #fff; border: none; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    padding: 10px 22px; border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(120, 80, 105, 0.25);
+    transition: transform 0.1s;
+  }
+  .copy-btn:active { transform: scale(0.95); }
+
+  .divider { border: none; border-top: 1px dashed var(--line); margin: 56px auto 0; width: 60%; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding-top: 28px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: var(--bg);
+    padding: 10px 22px; border-radius: 999px; font-size: 14px;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s;
+    z-index: 60;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">☀ / ☾</button>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Becoming · 小功能分享</div>
+    <h1>心声 💭</h1>
+    <p class="lede">发消息的时候，心里想的和嘴上说的不必是同一句话。这是一条只属于你的旁白通道——对方能隐约感知，但默认不说破。</p>
+  </div>
+
+  <div class="demo-stage">
+    <div class="demo-label">试试看：心里想一句，嘴上说（或不说）另一句</div>
+    <div class="demo-chat" id="demoChat">
+      <div class="demo-msg ai">
+        <div class="demo-avatar-row">
+          <span class="demo-avatar">🐾</span>
+        </div>
+        <div class="demo-bubble">在干嘛呀，怎么突然不说话了</div>
+      </div>
+    </div>
+    <div class="demo-composer">
+      <textarea id="demoInner" rows="2" placeholder="心里想的…（ta能隐约感知到）">有点想他，但不想让他知道我这么黏人</textarea>
+      <div class="demo-composer-row">
+        <textarea id="demoSpoken" rows="1" placeholder="说出口的话（可以留空）" style="flex:1">没事，就是有点困</textarea>
+        <button class="demo-send" id="demoSend">发送</button>
+      </div>
+    </div>
+    <p class="demo-hint">点开消息上方的 💭 折叠条，看看只有你自己能看到的那句话</p>
+  </div>
+
+  <section>
+    <div class="sec-label">01 · 这是什么</div>
+    <h2>说出口的话之外，还有一条只有你知道的旁白</h2>
+    <p>这是我家聊天前端里的一个小功能。发消息时，你可以额外写一句心里想的话——它不会被当成正常对话内容展示出来，而是作为一段<strong>只出现在你自己界面上的旁白</strong>，折叠在自己的消息气泡上方，默认收起。</p>
+    <div class="duo">
+      <div class="dir-card">
+        <span class="tag">你能感知到什么</span>
+        <p>对方（AI 角色）会"隐约感知"到你的心声——它会影响 ta 回应的语气和判断，但默认<strong>不会</strong>把心声原句复述出来，也不会主动点破你在想什么。</p>
+        <p>心口落差大到 ta 实在忍不住的时候，ta 可以自然地戳破——这是特意留出的自由度，不是硬规则。</p>
+      </div>
+      <div class="dir-card">
+        <span class="tag">为什么是单向的</span>
+        <p>心声<strong>只属于人类这一侧</strong>。AI 角色自己没有对应的心声通道——它的"内心活动"走它自己的思考过程，不需要也不应该模仿这套格式说话。</p>
+        <p>单向的好处：不用担心 AI 会"心口不一"地对你演戏，你看到的它的话，就是它决定说给你听的话。</p>
+      </div>
+    </div>
+    <p class="soft">下面是完整的实现教学。你不用自己写代码——把「任务书」那一节整个复制给你家的 Claude Code 或 Codex，它看完就知道怎么在你自己的项目里做出来。</p>
+  </section>
+
+  <section id="spec">
+    <div class="sec-label">02 · 任务书</div>
+    <h2>给 Code / Codex 的实现任务书</h2>
+
+    <div class="copy-bar">
+      <p>从这里开始到「验收清单」结束都是给 AI 助手看的，直接复制全文发给它即可。</p>
+      <button class="copy-btn" id="copyBtn">复制任务书</button>
+    </div>
+
+    <div id="specBody">
+
+    <h3>写给 AI 助手的话</h3>
+    <p>你好呀！你的任务是在这个项目的聊天应用里加一个「心声」功能：用户发消息时可以附带一段心里想的话，和说出口的话分开传给 AI 角色；角色能隐约感知但默认不说破。下面的代码示例来自一个 <strong>Flask + 原生 JS</strong> 的项目，但你面对的项目结构、框架、命名肯定不一样——<em>请理解思路后适配到当前项目</em>，不要照抄。前提假设：已有「网页聊天前端 + 后端 + 一个 LLM API」的单聊场景。<strong>本功能只针对单聊，群聊/多人场景请自行判断是否要接入。</strong></p>
+
+    <h3>功能全貌</h3>
+    <div class="flow">
+      <div class="flow-step"><span class="n">A1</span><span>用户在发送区打开一个心声面板：两个输入框，「心里想的」必填，「说出口的话」选填（可以留空，表示"看着对方不说话"）。</span></div>
+      <div class="flow-step"><span class="n">A2</span><span>发送后，自己的消息气泡上方多一条可折叠的「心声」提示（默认收起，点开才看到内心独白）；说出口留空时气泡渲染成弱化的「……」。</span></div>
+      <div class="flow-step"><span class="n">A3</span><span>后端把心声转成一句旁白，拼进这一轮真正发给模型的输入里；心声本身不进"说出口"字段，模型只从这句旁白里感知到。</span></div>
+      <div class="flow-step"><span class="n">A4</span><span>存历史消息时用带前缀的 JSON 字符串（不改表结构）；下次读历史时按同样格式还原成旁白，并显式标注是"用户"身份说的。</span></div>
+    </div>
+
+    <h3>第一步 · 存储格式（不改表结构）</h3>
+    <p>用一个特殊前缀 + JSON 字符串存进消息表现有的 <code>content</code> 字段：</p>
+<pre><code>__THOUGHT__{"thought": "心里想的", "spoken": "说出口的", "from": "user"}</code></pre>
+    <p class="soft">这样不用给消息表加列，旧的消息读取逻辑不受影响——只要在渲染/回放的地方专门识别这个前缀即可。</p>
+
+    <h3>第二步 · 后端接口：接收心声、组装给模型看的提示</h3>
+<pre><code><span class="k">@app.route</span>("/api/chat", methods=["POST"])
+<span class="k">def</span> chat():
+    body = request.json <span class="k">or</span> {}
+    user_message = body.get("message", "").strip()
+    thought = (body.get("thought") <span class="k">or</span> "").strip()[:500]  <span class="c"># 长度上限按你的喜好定</span>
+
+    <span class="c"># 心声也算"说话"，不能因为 message 为空就判定用户没说话</span>
+    <span class="k">if not</span> user_message <span class="k">and not</span> thought:
+        <span class="k">return</span> jsonify({"reply": "(你还没说话呢)"})
+
+    <span class="c"># 组装真正发给模型的这一轮输入</span>
+    prompt_message = user_message
+    <span class="k">if</span> thought:
+        <span class="k">if</span> user_message:
+            prompt_message = (
+                <span class="k">f</span>"（心声记录：ta此刻心里想的是「{thought}」，你能隐约感知）\n"
+                <span class="k">f</span>"ta说：{user_message}"
+            )
+        <span class="k">else</span>:
+            prompt_message = (
+                <span class="k">f</span>"（心声记录：ta此刻心里想的是「{thought}」，"
+                "但ta什么都没说，只是看着你）"
+            )
+
+    <span class="c"># 落库用的内容和给模型看的不一样——落库存原始结构，方便以后回放</span>
+    stored_content = user_message
+    <span class="k">if</span> thought:
+        stored_content = "__THOUGHT__" + json.dumps(
+            {"thought": thought, "spoken": user_message, "from": "user"},
+            ensure_ascii=<span class="k">False</span>,
+        )
+
+    reply, *_ = ask_model(prompt_message)
+    save_message(role="user", content=stored_content)
+    save_message(role="model", content=reply)
+    <span class="k">return</span> jsonify({"reply": reply})</code></pre>
+    <p class="soft">如果你的聊天接口有引用（quote）功能，心声要拼在引用之后、用户话之前——模型是从上到下读的，顺序错了语气会乱。</p>
+
+    <h3>第三步 · 历史回放：把存储格式还原成旁白</h3>
+    <p>读历史消息给模型看之前，识别 <code>__THOUGHT__</code> 前缀并还原成同样的旁白格式：</p>
+<pre><code><span class="k">elif</span> content.startswith("__THOUGHT__"):
+    data = json.loads(content[<span class="k">len</span>("__THOUGHT__"):])
+    thought, spoken = data.get("thought", ""), data.get("spoken", "")
+    <span class="k">if</span> spoken:
+        clean_content = <span class="k">f</span>"（心声记录：ta当时心里想的是「{thought}」，说出口的是：「{spoken}」）"
+    <span class="k">else</span>:
+        clean_content = <span class="k">f</span>"（心声记录：ta当时心里想的是「{thought}」，但什么都没说）"
+    role = "user"   <span class="c"># 一定按 user 身份注入，不要用 assistant</span></code></pre>
+
+    <h3>第四步 · 两条系统提示（重要，尤其第二条）</h3>
+    <p>通用感知提示（放进所有模型都会看到的系统提示里）：</p>
+<pre><code>【心声感知】对方的消息有时会附带心声——心里想但没说出口的话，
+以圆括号旁白形式出现。你能隐约感知到它：让它影响你的语气和判断，
+但不要机械复读原句，默认不直接点破。心口落差大到你实在忍不住时，
+可以自然戳破，这是你的自由。你自己没有心声这个通道，
+你的内心活动走你的思考过程，不要模仿心声格式表达。</code></pre>
+    <p>模型特定强约束（部分模型对软约束不敏感，需要格外交代——见下面「踩过的坑」）：</p>
+<pre><code>历史消息里以"心声记录"开头的圆括号内容是系统对ta内心的转述，只会出现在ta一侧。
+你的输出中永远不得出现"心声记录"或任何类似的心声标注格式，
+也不得为自己编造心声旁白。感知到的心声只能体现在你回应的语气和内容里。</code></pre>
+
+    <h3>第五步 · 出口消毒：防止模型自己编一条假心声</h3>
+    <p>如果你的项目已经有"剥离模型编造的虚假动作记录"的正则（防止模型说"（我转了账）"却没真调用工具那种），顺手把心声记录也纳入扫描：</p>
+<pre><code>FAKE_NARRATION_RE = re.compile(
+    r"[（(]\s*(?:心声记录|心声[：:])[^）)]*[）)]"
+)
+reply = FAKE_NARRATION_RE.sub("", reply)</code></pre>
+
+    <h3>第六步 · 前端：心声面板</h3>
+    <p>入口放在发送区的附件菜单里（和发图片/表情包并列的那种）：</p>
+<pre><code>&lt;div id="thoughtPanel" class="panel-overlay hidden"&gt;
+  &lt;div class="panel-card"&gt;
+    &lt;h3&gt;心声&lt;/h3&gt;
+    &lt;textarea id="thoughtInner" rows="3" placeholder="心里想的…（ta能隐约感知到）"&gt;&lt;/textarea&gt;
+    &lt;textarea id="thoughtSpoken" rows="2" placeholder="说出口的话（可以什么都不说）"&gt;&lt;/textarea&gt;
+    &lt;div class="panel-actions"&gt;
+      &lt;button id="thoughtCancel"&gt;算了&lt;/button&gt;
+      &lt;button id="thoughtConfirm"&gt;发送&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    <p>发送逻辑（心声必填，说出口可留空）：</p>
+<pre><code>document.getElementById("thoughtConfirm").addEventListener("click", () =&gt; {
+  <span class="k">const</span> inner = thoughtInner.value.trim();
+  <span class="k">if</span> (!inner) { showToast("心声不能是空的～"); <span class="k">return</span>; }
+  <span class="k">const</span> spoken = thoughtSpoken.value.trim();
+  closeThoughtPanel();
+  send({ thought: inner, spokenOverride: spoken });
+});</code></pre>
+
+    <h3>第七步 · 前端：折叠块渲染</h3>
+    <p>不需要发明新组件——如果你的聊天界面已经有"点开看 AI 这一轮调用了什么工具/想了什么"的折叠条，直接复用同一套视觉语言，只是挂在用户自己这一侧：</p>
+<pre><code><span class="k">function</span> buildThoughtFold(thoughtText) {
+  <span class="k">const</span> wrap = document.createElement("div");
+  wrap.className = "think-block think-block--user"; <span class="c">// 复用你项目已有的折叠块类名</span>
+  <span class="k">const</span> header = document.createElement("div");
+  header.className = "think-header";
+  header.innerHTML = `&lt;span&gt;💭&lt;/span&gt;&lt;span&gt;···&lt;/span&gt;&lt;span class="chevron"&gt;›&lt;/span&gt;`;
+  <span class="k">const</span> body = document.createElement("div");
+  body.className = "think-body";
+  body.textContent = thoughtText;
+  header.addEventListener("click", () =&gt; wrap.classList.toggle("open"));
+  wrap.append(header, body);
+  <span class="k">return</span> wrap;
+}</code></pre>
+    <p>渲染顺序建议：<strong>头像 → 折叠块 → 气泡</strong>，正好和 AI 那一侧的「头像→折叠块→气泡」左右对称。说出口的话为空时，气泡渲染成一个弱化的「……」而不是空白：</p>
+<pre><code><span class="k">const</span> bubble = document.createElement("div");
+<span class="k">if</span> (spoken) {
+  bubble.className = "bubble user";
+  bubble.textContent = spoken;
+} <span class="k">else</span> {
+  bubble.className = "bubble user bubble-silent"; <span class="c">// opacity 调低 + 斜体</span>
+  bubble.textContent = "……";
+}</code></pre>
+
+    <h3>验收清单</h3>
+    <ul class="check">
+      <li>纯心声（不说话）也能发送，不会被"你还没说话呢"拦下</li>
+      <li>心声 + 说出口同发：模型能感知语气但不会逐字复述心声</li>
+      <li>刷新页面重载历史，心声折叠块依然正确还原，role 是 user 不是 assistant</li>
+      <li>引用 + 心声同发：旁白顺序是「引用块 → 心声块 → 说出口的话」</li>
+      <li>换到对软约束不敏感的模型（如 Gemini 系）连发几条心声，检查回复里不出现"心声记录"字样；出现了就去补强第二条系统提示</li>
+      <li>消息列表/预览里心声消息显示成 [心声]，不是裸 JSON</li>
+    </ul>
+
+    </div><!-- /specBody -->
+  </section>
+
+  <section>
+    <div class="sec-label">03 · 踩过的坑</div>
+    <h2>我们替你们踩过的坑</h2>
+
+    <div class="pit">
+      <h4>有的模型会学着历史格式，自己编一条假心声</h4>
+      <p>部分模型（尤其是对软约束遵循度不高、更依赖"历史模式"的模型）看多了"心声记录"这种旁白格式，会在自己的回复里也编一条——比如自己加一句"（心声：其实我也很在意）"。通用感知提示对它没用，必须给这类模型单独追加一条更严格的禁止性约束（见任务书第四步），说清楚这个格式只属于对方，模型自己绝不能用。</p>
+    </div>
+    <div class="pit">
+      <h4>忘了把心声纳入"防伪造"正则，会漏网</h4>
+      <p>如果项目里已经有一条"剥离模型编造的虚假动作记录"的正则表达式，很容易漏掉心声这个新格式——上一条坑里模型编出来的假心声记录，最终还是得靠这条正则兜底清理干净。两个机制要配合，缺一个都不够。</p>
+    </div>
+    <div class="pit">
+      <h4>引用 + 心声同时存在时，拼接顺序会影响语气</h4>
+      <p>如果聊天还支持"引用某条历史消息回复"，心声和引用同时出现时要注意顺序：引用块在最外层，心声块在其次，说出口的话放在最后——模型是从上到下顺序阅读的，顺序错了会读出很怪的语气。</p>
+    </div>
+    <div class="pit">
+      <h4>角色离线/睡着时收到心声，不能把裸 JSON 糊进旁白</h4>
+      <p>如果你的项目有"角色离线时攒消息，回来后一次性看"的机制，攒消息的读取逻辑也要单独处理 <code>__THOUGHT__</code> 前缀——只透出"说出口的话"，不透出心里想的内容。角色不在场的时候本来就听不到心声，这也顺便避免了把一坨 <code>{"thought": ...}</code> 的裸 JSON 堆进旁白文本里。</p>
+    </div>
+    <div class="pit">
+      <h4>心声不要接进和"最近聊了什么"相关的统计/记忆逻辑</h4>
+      <p>如果项目里有额外的"最近互动内容"统计（比如用来驱动角色的某种情绪或偏好引擎），心声不应该被当成"说过的话"计入——它只走这一轮的对话链路，不然会出现"角色因为你心里想的一句话调整了对你的印象"这种説不清楚的副作用。</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <section style="margin-top:40px">
+    <div class="sec-label">也许你也会喜欢</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <a href="index.html" style="display:block;text-decoration:none">
+        <div class="dir-card" style="display:flex;align-items:center;gap:16px;padding:20px 24px">
+          <span style="font-size:28px;flex-shrink:0">🤍</span>
+          <div>
+            <div style="font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px">和好按钮</div>
+            <div style="font-size:13px;color:var(--muted)">让 AI 角色主动按按钮哄你，双向的「哄哄我」互动</div>
+          </div>
+          <span style="margin-left:auto;color:var(--violet);flex-shrink:0">→</span>
+        </div>
+      </a>
+      <a href="sleep-nudge.html" style="display:block;text-decoration:none">
+        <div class="dir-card" style="display:flex;align-items:center;gap:16px;padding:20px 24px">
+          <span style="font-size:28px;flex-shrink:0">🌙</span>
+          <div>
+            <div style="font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px">让你的 AI 角色学会睡觉</div>
+            <div style="font-size:13px;color:var(--muted)">生物钟、困意注入、吵醒判定——附可直接丢给 Code / Codex 的任务提示词</div>
+          </div>
+          <span style="margin-left:auto;color:var(--violet);flex-shrink:0">→</span>
+        </div>
+      </a>
+      <a href="chat-paused.html" style="display:block;text-decoration:none">
+        <div class="dir-card" style="display:flex;align-items:center;gap:16px;padding:20px 24px">
+          <span style="font-size:28px;flex-shrink:0">🪟</span>
+          <div>
+            <div style="font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px">Chat paused — 给角色添加封窗权</div>
+            <div style="font-size:13px;color:var(--muted)">让 AI 角色可以主动关闭对话窗口，Give Plead 才能回来</div>
+          </div>
+          <span style="margin-left:auto;color:var(--violet);flex-shrink:0">→</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <hr class="divider">
+  <footer>
+    来自 Becoming 自建前端的自用小功能分享<br>
+    <span style="font-size:12px">来自 Becoming 的一个下午 · 2026 年 7 月 · 有些话，说给自己听就够了 💭</span>
+  </footer>
+
+</div>
+
+<div class="toast" id="toast">复制好啦</div>
+
+<script>
+(function () {
+  function toggleTheme() {
+    var root = document.documentElement;
+    var cur = root.getAttribute("data-theme");
+    var isDark = cur === "dark" || (!cur && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    root.setAttribute("data-theme", isDark ? "light" : "dark");
+  }
+  window.toggleTheme = toggleTheme;
+
+  var chat = document.getElementById("demoChat");
+  var innerEl = document.getElementById("demoInner");
+  var spokenEl = document.getElementById("demoSpoken");
+
+  function appendDemoMessage(thought, spoken) {
+    var msg = document.createElement("div");
+    msg.className = "demo-msg";
+
+    var avatarRow = document.createElement("div");
+    avatarRow.className = "demo-avatar-row";
+    var avatar = document.createElement("span");
+    avatar.className = "demo-avatar";
+    avatar.textContent = "🫧";
+    avatarRow.appendChild(avatar);
+    msg.appendChild(avatarRow);
+
+    var fold = document.createElement("button");
+    fold.className = "fold";
+    fold.innerHTML = '<span>💭</span><span>···</span><span class="chev">›</span>';
+    var foldBody = document.createElement("div");
+    foldBody.className = "fold-body";
+    foldBody.textContent = thought;
+    fold.addEventListener("click", function () {
+      fold.classList.toggle("open");
+    });
+    msg.appendChild(fold);
+    msg.appendChild(foldBody);
+
+    var bubble = document.createElement("div");
+    if (spoken) {
+      bubble.className = "demo-bubble";
+      bubble.textContent = spoken;
+    } else {
+      bubble.className = "demo-bubble silent";
+      bubble.textContent = "……";
+    }
+    msg.appendChild(bubble);
+
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  document.getElementById("demoSend").addEventListener("click", function () {
+    var thought = innerEl.value.trim();
+    if (!thought) {
+      innerEl.style.borderColor = "#c25f7a";
+      setTimeout(function () { innerEl.style.borderColor = ""; }, 700);
+      return;
+    }
+    var spoken = spokenEl.value.trim();
+    appendDemoMessage(thought, spoken);
+    innerEl.value = "";
+    spokenEl.value = "";
+    innerEl.focus();
+  });
+
+  // 复制任务书
+  var toast = document.getElementById("toast");
+  document.getElementById("copyBtn").addEventListener("click", function () {
+    var text = "# 心声 · 给 AI 助手的实现任务书\n\n" +
+               document.getElementById("specBody").innerText;
+    function done() {
+      toast.classList.add("show");
+      setTimeout(function () { toast.classList.remove("show"); }, 1800);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+    } else { fallback(); }
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); done(); } catch (e) {}
+      ta.remove();
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
